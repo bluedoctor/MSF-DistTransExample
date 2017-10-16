@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{F0D046B0-44F1-4229-8311-ADF632A5F9AA}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DistTransServices</RootNamespace>
+    <AssemblyName>DistTransServices</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="PWMIS.Core">
+      <HintPath>..\packages\PDF.NET.SOD.Core.5.6.1.831\lib\PWMIS.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="PWMIS.Core.Extensions">
+      <HintPath>..\packages\PDF.NET.SOD.5.6.1.831\lib\PWMIS.Core.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="PWMIS.EnterpriseFramework.Common">
+      <HintPath>..\packages\PDF.NET.EnterpriseFramework.1.0.4\lib\net40\PWMIS.EnterpriseFramework.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="PWMIS.EnterpriseFramework.IOC">
+      <HintPath>..\packages\PDF.NET.EnterpriseFramework.1.0.4\lib\net40\PWMIS.EnterpriseFramework.IOC.dll</HintPath>
+    </Reference>
+    <Reference Include="PWMIS.EnterpriseFramework.Message.PublishService">
+      <HintPath>..\packages\PDF.Net.MSF.Client.1.0.3\lib\net40\PWMIS.EnterpriseFramework.Message.PublishService.dll</HintPath>
+    </Reference>
+    <Reference Include="PWMIS.EnterpriseFramework.Message.SubscriberLib">
+      <HintPath>..\packages\PDF.Net.MSF.Client.1.0.3\lib\net40\PWMIS.EnterpriseFramework.Message.SubscriberLib.dll</HintPath>
+    </Reference>
+    <Reference Include="PWMIS.EnterpriseFramework.ModuleRoute">
+      <HintPath>..\packages\PDF.NET.EnterpriseFramework.1.0.4\lib\net40\PWMIS.EnterpriseFramework.ModuleRoute.dll</HintPath>
+    </Reference>
+    <Reference Include="PWMIS.EnterpriseFramework.Service.Basic">
+      <HintPath>..\packages\PDF.NET.EnterpriseFramework.1.0.4\lib\net40\PWMIS.EnterpriseFramework.Service.Basic.dll</HintPath>
+    </Reference>
+    <Reference Include="PWMIS.EnterpriseFramework.Service.Client">
+      <HintPath>..\packages\PDF.Net.MSF.Client.1.0.3\lib\net40\PWMIS.EnterpriseFramework.Service.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="PWMIS.EnterpriseFramework.Service.Runtime">
+      <HintPath>..\packages\PDF.Net.MSF.Service.1.0.3\lib\PWMIS.EnterpriseFramework.Service.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DbContexts\OrderDbContext.cs" />
+    <Compile Include="DbContexts\ProductDbContext.cs" />
+    <Compile Include="DistTrans3PCState.cs" />
+    <Compile Include="Entitys\OrderEntity.cs" />
+    <Compile Include="Entitys\OrderItemEntity.cs" />
+    <Compile Include="Entitys\ProductEntity.cs" />
+    <Compile Include="OrderService.cs" />
+    <Compile Include="ProductService.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DistTransDto\DistTransDto.csproj">
+      <Project>{720de97e-1ea5-48dc-aacb-ea1881039e8e}</Project>
+      <Name>DistTransDto</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+ start "" "$(SolutionDir)Host\PreCompile.bat"</PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>
+ copy /y "$(TargetDir)*.*" "$(SolutionDir)Host"</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

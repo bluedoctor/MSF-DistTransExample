@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>PDF.NET.SOD.Core</id>
+    <version>5.6.1.831</version>
+    <title>PDF.NET SOD Core</title>
+    <authors>深蓝医生</authors>
+    <owners>深蓝医生</owners>
+    <licenseUrl>http://pwmis.codeplex.com/license</licenseUrl>
+    <projectUrl>http://www.pwmis.com/SqlMap/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>PDF.NET SOD核心库</description>
+  </metadata>
+</package>
