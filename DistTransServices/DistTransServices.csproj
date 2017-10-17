@@ -76,7 +76,7 @@
   <ItemGroup>
     <Compile Include="DbContexts\OrderDbContext.cs" />
     <Compile Include="DbContexts\ProductDbContext.cs" />
-    <Compile Include="DistTrans3PCState.cs" />
+    <Compile Include="DTCService.cs" />
     <Compile Include="Entitys\OrderEntity.cs" />
     <Compile Include="Entitys\OrderItemEntity.cs" />
     <Compile Include="Entitys\ProductEntity.cs" />

@@ -43,6 +43,7 @@
     <Compile Include="CommonInterface\IOrderItems.cs" />
     <Compile Include="CommonInterface\IOrders.cs" />
     <Compile Include="CommonInterface\IProduct.cs" />
+    <Compile Include="DistTrans3PCState.cs" />
     <Compile Include="ProductDto.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
