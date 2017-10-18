@@ -52,5 +52,14 @@ namespace DistTransServices.Entitys
             get { return getProperty<int>("BuyNumber"); }
             set { setProperty("BuyNumber", value); }
         }
+
+        /// <summary>
+        /// 发货地点
+        /// </summary>
+        public string StoreHouse
+        {
+            get { return getProperty<string>("StoreHouse"); }
+            set { setProperty("StoreHouse", value, 50); }
+        }
     }
 }

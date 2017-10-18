@@ -30,14 +30,15 @@ namespace DistTransServices
         }
 
         /// <summary>
-        /// 更新商品库存
+        /// 更新商品库存，并返回商品售卖简要信息
         /// </summary>
         /// <param name="buyItems">购买的商品精简信息</param>
         /// <returns></returns>
-        public bool UpdateProductOnhand(IEnumerable<BuyProductDto> buyItems)
+        public List<SellProductDto> UpdateProductOnhand(IEnumerable<BuyProductDto> buyItems)
         {
             //这里调用分布式服务 DTCService.AttendTransaction
             ProductDbContext context = new ProductDbContext();
+            List<SellProductDto> result = new List<SellProductDto>();
 
             foreach (BuyProductDto item in buyItems)
             {
@@ -52,10 +53,11 @@ namespace DistTransServices
 
               
                 int count= context.ProductQuery.ExecuteOql(q);
-                if (count <= 0)
-                    return false;
+                //if (count <= 0)
+                //    return false;
             }
-            return true;
+
+            return result;
         }
     }
 }
