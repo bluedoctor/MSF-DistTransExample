@@ -36,6 +36,7 @@ namespace DistTransServices
         /// <returns></returns>
         public bool UpdateProductOnhand(IEnumerable<BuyProductDto> buyItems)
         {
+            //这里调用分布式服务 DTCService.AttendTransaction
             ProductDbContext context = new ProductDbContext();
 
             foreach (BuyProductDto item in buyItems)
