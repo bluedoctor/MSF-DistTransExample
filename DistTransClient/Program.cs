@@ -38,7 +38,7 @@ namespace DistTransClient
             Console.WriteLine("当前客户端代理的服务基础地址是：{0}", client.ServiceBaseUri);
             Console.WriteLine();
             Console.WriteLine("MSF 分布式事务 模式调用示例：");
-
+            /*
             ServiceRequest request = new ServiceRequest();
             request.ServiceName = "DTCService";
             request.MethodName = "RegisterTransaction";
@@ -61,6 +61,64 @@ namespace DistTransClient
                         return DistTrans3PCState.Rep_No_1PC;
                 }
             );
+            */
+
+            ServiceRequest request = new ServiceRequest();
+            request.ServiceName = "DemoService";
+            request.MethodName = "TransactionTest";
+            request.Parameters = new object[] { 3,2 };
+            
+            /*
+            Task<bool> task = client.RequestServiceAsync<bool, string, string>(request,
+                s =>
+                {
+                    Console.WriteLine("接收到服务器指令：{0}", s);
+                    Console.WriteLine("即将回复服务器，请输入回复内容(yes/no/错误信息)，也可以直接关闭本进程。");
+                    string rep = Console.ReadLine();
+                    if (s == "CanCommit")
+                    {
+                        Console.WriteLine("回复结果:是否可以提交:{0}", rep);
+                    }
+                    else if (s == "DoCommit")
+                    {
+                        Console.WriteLine("回复结果:提交是否成功:{0}", rep);
+                    }
+                    Console.WriteLine();
+                    return rep;
+                }
+                );
+
+            try
+            {
+                task.Wait();
+                Console.WriteLine("服务访问完成，结果：{0}", task.Result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("访问服务错误：{0}",ex.Message);
+            }
+             */ 
+
+            client.RequestService<bool, string, string>(request.ServiceUrl, PWMIS.EnterpriseFramework.Common.DataType.Text, 
+                r=>{
+                    Console.WriteLine("服务访问完成，结果：{0}", r);
+                },
+                s => {
+                    Console.WriteLine("接收到服务器指令：{0}", s);
+                    Console.WriteLine("即将回复服务器，请输入回复内容(yes/no/错误信息)，也可以直接关闭本进程。");
+                    string rep = Console.ReadLine();
+                    if (s == "CanCommit")
+                    {
+                        Console.WriteLine("回复结果:是否可以提交:{0}", rep);
+                    }
+                    else if (s == "DoCommit")
+                    {
+                        Console.WriteLine("回复结果:提交是否成功:{0}", rep);
+                    }
+                    Console.WriteLine();
+                    return rep;
+                });
+
 
             System.Threading.Thread.Sleep(1000 * 60 * 60);
             string repMsg = "ok";
@@ -78,6 +136,7 @@ namespace DistTransClient
 
         static void client_ErrorMessage(object sender, MessageSubscriber.MessageEventArgs e)
         {
+            //如果是分布式事务，这里应该回滚
             Console.WriteLine("请求服务器错误：{0}", e.MessageText);
         }
     }

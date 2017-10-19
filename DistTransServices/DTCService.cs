@@ -225,8 +225,9 @@ namespace DistTransServices
             DistTrans3PCState currDTState = DistTrans3PCState.CanCommit;
             System.Threading.CancellationTokenSource cts = new System.Threading.CancellationTokenSource();
             var tcs = new TaskCompletionSource<T>();
-            dbHelper.BeginTransaction();
-
+            //应该在外部开启事务，以方便出错，回滚事务
+            //dbHelper.BeginTransaction();
+            
             DataType resultDataType = MessageConverter<T>.GetResponseDataType();
             client.ErrorMessage += client_ErrorMessage;
             client.RequestService<bool, DistTrans3PCState, DistTrans3PCState>(request.ServiceUrl, resultDataType,

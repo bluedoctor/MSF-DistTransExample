@@ -34,17 +34,20 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="PWMIS.EnterpriseFramework.Common">
+    <Reference Include="PWMIS.EnterpriseFramework.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
       <HintPath>..\packages\PDF.Net.MSF.Client.1.0.3\lib\net40\PWMIS.EnterpriseFramework.Common.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="PWMIS.EnterpriseFramework.Message.PublishService">
+    <Reference Include="PWMIS.EnterpriseFramework.Message.PublishService, Version=1.0.0.0, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
       <HintPath>..\packages\PDF.Net.MSF.Client.1.0.3\lib\net40\PWMIS.EnterpriseFramework.Message.PublishService.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="PWMIS.EnterpriseFramework.Message.SubscriberLib">
+    <Reference Include="PWMIS.EnterpriseFramework.Message.SubscriberLib, Version=1.0.0.0, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
       <HintPath>..\packages\PDF.Net.MSF.Client.1.0.3\lib\net40\PWMIS.EnterpriseFramework.Message.SubscriberLib.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="PWMIS.EnterpriseFramework.Service.Basic">
       <HintPath>..\packages\PDF.Net.MSF.Client.1.0.3\lib\net40\PWMIS.EnterpriseFramework.Service.Basic.dll</HintPath>
