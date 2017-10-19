@@ -58,6 +58,13 @@ namespace DistTransServices
         private int PrearedOKCount = 0;
         private int PreCommitOKCount = 0;
         const int MAX_WAIT_TIME = 1000 * 60 * 5;
+
+        private static void WriteLog(string format, params object[] args)
+        {
+            string logText = string.Format(format, args);
+
+        }
+
         /// <summary>
         /// 区别一个分布式事务的标记
         /// </summary>
@@ -141,7 +148,7 @@ namespace DistTransServices
                     if (waiteTime >= MAX_WAIT_TIME)
                     {
                         this.TransAbort = true;
-                        Console.WriteLine("MSF DTC 1PC waite timeout ({0} ms),transaction Abort.", MAX_WAIT_TIME);                    
+                        WriteLog("MSF DTC{0} 1PC waite timeout ({1} ms),transaction Abort.", this.TransIdentity,MAX_WAIT_TIME);                    
                     }
                     if (this.TransAbort)
                     {
@@ -172,7 +179,7 @@ namespace DistTransServices
                     if (waiteTime >= 10000)
                     {
                         this.TransAbort = true;
-                        Console.WriteLine("MSF DTC 2PC waite timeout ({0} ms),transaction Abort.", waiteTime);     
+                        WriteLog("MSF DTC({0}) 2PC waite timeout ({1} ms),transaction Abort.", this.TransIdentity,waiteTime);     
                     }
                     
                     if (this.TransAbort)
@@ -199,41 +206,64 @@ namespace DistTransServices
             }
         }
 
-        public static T DistTrans3PCRequest<T>(Proxy client, AdoHelper dbHelper, ServiceRequest request, Action<AdoHelper> transactionAction)
+        /// <summary>
+        /// 3阶段分布式事务请求函数，执行完本地事务操作后，请求线程将继续工作，处理分布式提交的问题
+        /// </summary>
+        /// <typeparam name="T">本地事务操作函数的返回类型</typeparam>
+        /// <param name="client">服务代理客户端</param>
+        /// <param name="transIdentity">分布式事务的标识</param>
+        /// <param name="dbHelper">数据访问对象</param>
+        /// <param name="transFunction">事务操作函数</param>
+        /// <returns>返回事务操作函数的结果</returns>
+        public static T DistTrans3PCRequest<T>(Proxy client,string transIdentity, AdoHelper dbHelper, Func<AdoHelper,T> transFunction)
         {
+            ServiceRequest request = new ServiceRequest();
+            request.ServiceName = "DTCService";
+            request.MethodName = "AttendTransaction";
+            request.Parameters = new object[] { transIdentity };
+
             DistTrans3PCState currDTState = DistTrans3PCState.CanCommit;
             System.Threading.CancellationTokenSource cts = new System.Threading.CancellationTokenSource();
-
+            var tcs = new TaskCompletionSource<T>();
             dbHelper.BeginTransaction();
 
             DataType resultDataType = MessageConverter<T>.GetResponseDataType();
-            Task<T> task = client.RequestServiceAsync<T, DistTrans3PCState, DistTrans3PCState>(request.ServiceUrl, resultDataType,
+            client.ErrorMessage += client_ErrorMessage;
+            client.RequestService<bool, DistTrans3PCState, DistTrans3PCState>(request.ServiceUrl, resultDataType,
+                r=>
+                {
+                    WriteLog("MSF DTC({0}) Controller Process Reuslt:{1},Receive time:{2}", transIdentity, r,DateTime.Now);
+                    client.Close();
+                },
                 s =>
                 {
+                    WriteLog("MSF DTC({0}) Resource at {1} receive DTC Controller state:{2}",transIdentity, DateTime.Now, s);
                     if (s == DistTrans3PCState.CanCommit)
                     {
                         try
                         {
-                            transactionAction(dbHelper);
+                            T t= transFunction(dbHelper);
                             currDTState = DistTrans3PCState.Rep_Yes_1PC;
+                            tcs.SetResult(t);
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine(ex.Message);
+                            WriteLog(ex.Message);
                             currDTState = DistTrans3PCState.Rep_No_1PC;
+                            tcs.SetException(ex);
                         }
                         //警告：如果自此之后，很长时间没有收到协调服务器的任何回复，本地应回滚事务
                         new Task(() =>
                         {
                             DateTime currOptTime = DateTime.Now;
-                            Console.WriteLine("MSF DTC 1PC,Child moniter task has started at time:{0}", currOptTime);
+                            WriteLog("MSF DTC({0}) 1PC,Child moniter task has started at time:{1}",transIdentity, currOptTime);
 
                             while (currDTState != DistTrans3PCState.Completed)
                             {
                                 System.Threading.Thread.Sleep(10);
                                 if (currDTState != DistTrans3PCState.Rep_Yes_1PC && currDTState != DistTrans3PCState.Rep_No_1PC)
                                 {
-                                    Console.WriteLine("MSF DTC 1PC,Child moniter task find DistTrans3PCState has changed,Now is {0},task break!", currDTState);
+                                    WriteLog("MSF DTC({0}) 1PC,Child moniter task find DistTrans3PCState has changed,Now is {1},task break!",transIdentity, currDTState);
                                     break;
                                 }
                                 else
@@ -249,14 +279,14 @@ namespace DistTransServices
                                         {
 
                                         }
-                                        cts.Cancel();
-                                        Console.WriteLine("MSF DTC 1PC,Child moniter task check Opreation timeout,Rollback Transaction,task break!");
+                                        client.Close();
+                                        WriteLog("MSF DTC({0}) 1PC,Child moniter task check Opreation timeout,Rollback Transaction,task break!", transIdentity);
                                         break;
                                     }
                                 }
                             }
 
-                        }, TaskCreationOptions.AttachedToParent).Start();
+                        }, TaskCreationOptions.None).Start();
 
                         return currDTState;
                     }
@@ -267,14 +297,14 @@ namespace DistTransServices
                         new Task(() =>
                         {
                             DateTime currOptTime = DateTime.Now;
-                            Console.WriteLine("MSF DTC 2PC,Child moniter task has started at time:{0}", currOptTime);
+                            WriteLog("MSF DTC({0}) 2PC,Child moniter task has started at time:{1}",transIdentity, currOptTime);
 
                             while (currDTState != DistTrans3PCState.Completed)
                             {
                                 System.Threading.Thread.Sleep(10);
                                 if (currDTState != DistTrans3PCState.ACK_Yes_2PC)
                                 {
-                                    Console.WriteLine("MSF DTC 2PC,Child moniter task find DistTrans3PCState has changed,Now is {0},task break!", currDTState);
+                                    WriteLog("MSF DTC({0}) 2PC,Child moniter task find DistTrans3PCState has changed,Now is {1},task break!", transIdentity,currDTState);
                                     break;
                                 }
                                 else
@@ -290,13 +320,13 @@ namespace DistTransServices
                                         {
 
                                         }
-                                        cts.Cancel();
-                                        Console.WriteLine("MSF DTC 2PC,Child moniter task check Opreation timeout,Commit Transaction,task break!");
+                                        client.Close();
+                                        WriteLog("MSF DTC({0}) 2PC,Child moniter task check Opreation timeout,Commit Transaction,task break!", transIdentity);
                                         break;
                                     }
                                 }
                             }
-                        }, TaskCreationOptions.AttachedToParent).Start();
+                        }, TaskCreationOptions.None).Start();
 
                         return currDTState;
 
@@ -334,26 +364,35 @@ namespace DistTransServices
                         return s;
                     }
                 });
+
+          
+
             try
             {
-                task.Wait(cts.Token);
+                tcs.Task.Wait();
+                return tcs.Task.Result;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Task Error:{0}", ex.Message);
-                Console.WriteLine("Try Rollback..");
+                WriteLog("Task Error:{0}", ex.Message);
+                WriteLog("Try Rollback..");
                 try
                 {
                     dbHelper.Rollback();
-                    Console.WriteLine("Try Rollback..OK!");
+                    WriteLog("Try Rollback..OK!");
                 }
                 catch (Exception ex1)
                 {
-                    Console.WriteLine("Try Rollback..Error:{0}", ex1.Message);
+                    WriteLog("Try Rollback..Error:{0}", ex1.Message);
                 }
             }
 
-            return task.Result;
+            return default(T);
+        }
+
+        static void client_ErrorMessage(object sender, MessageSubscriber.MessageEventArgs e)
+        {
+            WriteLog("MSF DTC Service Proxy Error:" + e.MessageText);
         }
 
     }

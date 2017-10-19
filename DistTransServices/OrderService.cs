@@ -24,6 +24,12 @@ namespace DistTransServices
         }
         public bool CreateOrder(int orderId,int userId,IEnumerable<BuyProductDto> buyItems)
         {
+            //先请求商品服务，扣减库存，并获取商品的仓库信息
+            ServiceRequest request = new ServiceRequest();
+            request.ServiceName = "ProductService";
+            request.MethodName = "UpdateProductOnhand";
+            request.Parameters = new object[] { buyItems };
+
             //构造订单明细和订单对象
             List<OrderItemEntity> orderItems = new List<OrderItemEntity>();
             OrderEntity order = new OrderEntity()
@@ -53,18 +59,15 @@ namespace DistTransServices
             //保存订单到数据库
             //使用3阶段提交的分布式事务
             OrderDbContext context = new OrderDbContext();
-            ServiceRequest request = new ServiceRequest();
-            request.ServiceName = "ProductService";
-            request.MethodName = "UpdateProductOnhand";
-            request.Parameters = new object[] { buyItems };
+          
 
-            return DTController.DistTrans3PCRequest<bool>(productProxy, 
+            return DTController.DistTrans3PCRequest<bool>(productProxy, "1234567890",
                 context.CurrentDataBase,
-                request,
                 c =>
                 {
                     context.Add<OrderEntity>(order);
                     context.AddList<OrderItemEntity>(orderItems);
+                    return true;
                 });
         }
 
