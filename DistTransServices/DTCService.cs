@@ -47,7 +47,7 @@ namespace DistTransServices
     }
 
     /// <summary>
-    /// 分布式事务控制器
+    /// 分布式事务协调器
     /// </summary>
     public class DTController
     {
@@ -58,6 +58,8 @@ namespace DistTransServices
         private int PrearedOKCount = 0;
         private int PreCommitOKCount = 0;
         const int MAX_WAIT_TIME = 1000 * 60 * 5;
+
+        private DistTrans3PCState ResourceServerState;//事务资源服务器的状态
 
         private static void WriteLog(string format, params object[] args)
         {
@@ -79,6 +81,11 @@ namespace DistTransServices
             TransAbort = false;
         }
 
+        /// <summary>
+        /// 检查并开启一个分布式事务协调器对象
+        /// </summary>
+        /// <param name="transIdentity"></param>
+        /// <returns></returns>
         public static DTController CheckStartController(string transIdentity)
         {
             DTController controller = null;
@@ -210,23 +217,24 @@ namespace DistTransServices
         /// 3阶段分布式事务请求函数，执行完本地事务操作后，请求线程将继续工作，处理分布式提交的问题
         /// </summary>
         /// <typeparam name="T">本地事务操作函数的返回类型</typeparam>
-        /// <param name="client">服务代理客户端</param>
-        /// <param name="transIdentity">分布式事务的标识</param>
+        /// <param name="client">分布式事务服务的代理客户端</param>
         /// <param name="dbHelper">数据访问对象</param>
         /// <param name="transFunction">事务操作函数</param>
         /// <returns>返回事务操作函数的结果</returns>
-        public static T DistTrans3PCRequest<T>(Proxy client,string transIdentity, AdoHelper dbHelper, Func<AdoHelper,T> transFunction)
+        public  T DistTrans3PCRequest<T>(Proxy client, AdoHelper dbHelper, Func<AdoHelper,T> transFunction)
         {
+            string transIdentity = this.TransIdentity;
             ServiceRequest request = new ServiceRequest();
             request.ServiceName = "DTCService";
             request.MethodName = "AttendTransaction";
             request.Parameters = new object[] { transIdentity };
 
-            DistTrans3PCState currDTState = DistTrans3PCState.CanCommit;
+            ResourceServerState = DistTrans3PCState.CanCommit;
             System.Threading.CancellationTokenSource cts = new System.Threading.CancellationTokenSource();
             var tcs = new TaskCompletionSource<T>();
-            //应该在外部开启事务，以方便出错，回滚事务
-            //dbHelper.BeginTransaction();
+            //可以在外部开启事务，以方便出错，回滚事务，这里检查下是否开启了事务
+            if(dbHelper.TransactionCount<=0)
+                dbHelper.BeginTransaction();
             
             DataType resultDataType = MessageConverter<T>.GetResponseDataType();
             client.ErrorMessage += client_ErrorMessage;
@@ -244,13 +252,13 @@ namespace DistTransServices
                         try
                         {
                             T t= transFunction(dbHelper);
-                            currDTState = DistTrans3PCState.Rep_Yes_1PC;
+                            ResourceServerState = DistTrans3PCState.Rep_Yes_1PC;
                             tcs.SetResult(t);
                         }
                         catch (Exception ex)
                         {
                             WriteLog(ex.Message);
-                            currDTState = DistTrans3PCState.Rep_No_1PC;
+                            ResourceServerState = DistTrans3PCState.Rep_No_1PC;
                             tcs.SetException(ex);
                         }
                         //警告：如果自此之后，很长时间没有收到协调服务器的任何回复，本地应回滚事务
@@ -259,12 +267,22 @@ namespace DistTransServices
                             DateTime currOptTime = DateTime.Now;
                             WriteLog("MSF DTC({0}) 1PC,Child moniter task has started at time:{1}",transIdentity, currOptTime);
 
-                            while (currDTState != DistTrans3PCState.Completed)
+                            while (ResourceServerState != DistTrans3PCState.Completed)
                             {
                                 System.Threading.Thread.Sleep(10);
-                                if (currDTState != DistTrans3PCState.Rep_Yes_1PC && currDTState != DistTrans3PCState.Rep_No_1PC)
+                                if (ResourceServerState != DistTrans3PCState.Rep_Yes_1PC && ResourceServerState != DistTrans3PCState.Rep_No_1PC)
                                 {
-                                    WriteLog("MSF DTC({0}) 1PC,Child moniter task find DistTrans3PCState has changed,Now is {1},task break!",transIdentity, currDTState);
+                                    //在1阶段，只要发现通信中断，就应该回滚事务
+                                    if (ResourceServerState == DistTrans3PCState.CommunicationInterrupt)
+                                    {
+                                        TryRollback(dbHelper);
+                                        client.Close();
+                                        WriteLog("MSF DTC({0}) 1PC,Child moniter task check Communication Interrupt ,Rollback Transaction,task break!", transIdentity);
+                                    }
+                                    else
+                                    {
+                                        WriteLog("MSF DTC({0}) 1PC,Child moniter task find DistTrans3PCState has changed,Now is {1},task break!", transIdentity, ResourceServerState);
+                                    }
                                     break;
                                 }
                                 else
@@ -272,14 +290,7 @@ namespace DistTransServices
                                     //在1阶段回复消息后，超过一分钟，资源服务器没有收到协调服务器的任何响应，回滚本地事务
                                     if (DateTime.Now.Subtract(currOptTime).TotalSeconds > 60)
                                     {
-                                        try
-                                        {
-                                            dbHelper.Rollback();
-                                        }
-                                        catch
-                                        {
-
-                                        }
+                                        TryRollback(dbHelper);
                                         client.Close();
                                         WriteLog("MSF DTC({0}) 1PC,Child moniter task check Opreation timeout,Rollback Transaction,task break!", transIdentity);
                                         break;
@@ -289,38 +300,52 @@ namespace DistTransServices
 
                         }, TaskCreationOptions.None).Start();
 
-                        return currDTState;
+                        return ResourceServerState;
                     }
                     else if (s == DistTrans3PCState.PreCommit)
                     {
-                        currDTState = DistTrans3PCState.ACK_Yes_2PC;
-                        //警告：如果自此之后，很长时间没有收到协调服务器的任何回复，本地应提交事务
+                        ResourceServerState = DistTrans3PCState.ACK_Yes_2PC;
+                        //警告：如果自此之后，如果成功确认资源服务器进入第二阶段，但是很长时间没有收到协调服务器的任何回复，本地应提交事务
                         new Task(() =>
                         {
                             DateTime currOptTime = DateTime.Now;
                             WriteLog("MSF DTC({0}) 2PC,Child moniter task has started at time:{1}",transIdentity, currOptTime);
 
-                            while (currDTState != DistTrans3PCState.Completed)
+                            while (ResourceServerState != DistTrans3PCState.Completed)
                             {
                                 System.Threading.Thread.Sleep(10);
-                                if (currDTState != DistTrans3PCState.ACK_Yes_2PC)
+                                if (ResourceServerState != DistTrans3PCState.ACK_Yes_2PC)
                                 {
-                                    WriteLog("MSF DTC({0}) 2PC,Child moniter task find DistTrans3PCState has changed,Now is {1},task break!", transIdentity,currDTState);
+                                    //在2阶段，如果在1秒内就检测到通信已经中断，事务控制器可能难以收到预提交确认信息，考虑回滚本地事务
+                                    if (ResourceServerState == DistTrans3PCState.CommunicationInterrupt )
+                                    {
+                                        if (DateTime.Now.Subtract(currOptTime).TotalMilliseconds < 1000)
+                                        {
+                                            TryRollback(dbHelper);
+                                            WriteLog("MSF DTC({0}) 2PC,Child moniter find Communication Interrupt ,task break!", transIdentity);
+                                        }
+                                        else
+                                        {
+                                            //否则，1秒后才发现连接已经断开，预提交确认信号大概率已经发送过去，不用再等，提交本地事务
+                                            TryCommit(dbHelper);
+                                            WriteLog("MSF DTC({0}) 2PC,Child moniter find Communication Interrupt,but ACK_Yes_2PC send ok,tansaction Commit ,task break!", transIdentity);
+                                        }
+                                        //已经结束事务，关闭通信连接
+                                        client.Close();
+                                    }
+                                    else
+                                    {
+                                        //如果通信未中断且已经是其它状态，退出当前子任务
+                                        WriteLog("MSF DTC({0}) 2PC,Child moniter task find DistTrans3PCState has changed,Now is {1},task break!", transIdentity, ResourceServerState);
+                                    }
                                     break;
                                 }
                                 else
                                 {
-                                    //在2阶段，超过30秒，资源服务器没有收到协调服务器的任何响应，提交本地事务
+                                    //在2阶段，通信未中断，超过30秒，资源服务器没有收到协调服务器的任何响应，提交本地事务
                                     if (DateTime.Now.Subtract(currOptTime).TotalSeconds > 30)
                                     {
-                                        try
-                                        {
-                                            dbHelper.Commit();
-                                        }
-                                        catch
-                                        {
-
-                                        }
+                                        TryCommit(dbHelper);
                                         client.Close();
                                         WriteLog("MSF DTC({0}) 2PC,Child moniter task check Opreation timeout,Commit Transaction,task break!", transIdentity);
                                         break;
@@ -329,39 +354,31 @@ namespace DistTransServices
                             }
                         }, TaskCreationOptions.None).Start();
 
-                        return currDTState;
-
+                        return ResourceServerState;
                     }
                     else if (s == DistTrans3PCState.Abort)
                     {
-                        try
-                        {
-                            dbHelper.Rollback();
-                        }
-                        catch
-                        {
-
-                        }
-                        currDTState = DistTrans3PCState.ACK_No_2PC;
-                        return currDTState;
+                        TryRollback(dbHelper);
+                        ResourceServerState = DistTrans3PCState.ACK_No_2PC;
+                        return ResourceServerState;
                     }
                     else if (s == DistTrans3PCState.DoCommit)
                     {
                         try
                         {
                             dbHelper.Commit();
-                            currDTState = DistTrans3PCState.Rep_Yes_3PC;
+                            ResourceServerState = DistTrans3PCState.Rep_Yes_3PC;
                         }
                         catch
                         {
-                            currDTState = DistTrans3PCState.Rep_No_3PC;
+                            ResourceServerState = DistTrans3PCState.Rep_No_3PC;
                         }
-                        return currDTState;
+                        return ResourceServerState;
                     }
                     else
                     {
                         //其它参数，原样返回
-                        currDTState = s;
+                        ResourceServerState = s;
                         return s;
                     }
                 });
@@ -391,8 +408,31 @@ namespace DistTransServices
             return default(T);
         }
 
-        static void client_ErrorMessage(object sender, MessageSubscriber.MessageEventArgs e)
+        private void TryRollback(AdoHelper db)
         {
+            try
+            {
+                db.Commit();
+            }
+            catch
+            {
+            }
+        }
+
+        private void TryCommit(AdoHelper db)
+        {
+            try
+            {
+                db.Commit();
+            }
+            catch
+            {
+            }
+        }
+
+        void client_ErrorMessage(object sender, MessageSubscriber.MessageEventArgs e)
+        {
+            ResourceServerState = DistTrans3PCState.CommunicationInterrupt;
             WriteLog("MSF DTC Service Proxy Error:" + e.MessageText);
         }
 

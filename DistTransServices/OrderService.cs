@@ -19,20 +19,37 @@ namespace DistTransServices
     public class OrderService
     {
         Proxy productProxy;
+        Proxy DTS_Proxy;
         public OrderService()
         {
             productProxy = new Proxy();
             productProxy.ServiceBaseUri = System.Configuration.ConfigurationManager.AppSettings["ProductUri"];
+
+            DTS_Proxy = new Proxy();
+            DTS_Proxy.ServiceBaseUri = System.Configuration.ConfigurationManager.AppSettings["MSF_DTS_Uri"];
         }
+
+        /// <summary>
+        /// 生成订单的服务方法
+        /// </summary>
+        /// <param name="orderId">订单号</param>
+        /// <param name="userId">用户号</param>
+        /// <param name="buyItems">购买的商品简要清单</param>
+        /// <returns>订单是否创建成功</returns>
         public bool CreateOrder(int orderId,int userId,IEnumerable<BuyProductDto> buyItems)
         {
+            //在分布式事务的发起端，需要先定义分布式事务标识：
+            string DT_Identity = System.Guid.NewGuid().ToString();
+
             //先请求商品服务，扣减库存，并获取商品的仓库信息
             ServiceRequest request = new ServiceRequest();
             request.ServiceName = "ProductService";
             request.MethodName = "UpdateProductOnhand";
-            request.Parameters = new object[] { buyItems };
+            request.Parameters = new object[] { DT_Identity, buyItems };
+            List<SellProductDto> sellProducts = productProxy.RequestServiceAsync<List<SellProductDto>>(request).Result;
 
-            //构造订单明细和订单对象
+            #region 构造订单明细和订单对象
+            //
             List<OrderItemEntity> orderItems = new List<OrderItemEntity>();
             OrderEntity order = new OrderEntity()
             {
@@ -53,17 +70,20 @@ namespace DistTransServices
                         OnePrice= product.Price,
                          ProductName= product.ProductName
                 };
-                
+                temp.StoreHouse = (from i in sellProducts where i.ProductId == temp.ProductID select i.StoreHouse).FirstOrDefault();
+
                 orderItems.Add(temp);
                 order.OrderName += "," + temp.ProductName;
                 order.AmountPrice += temp.OnePrice * temp.BuyNumber;
             }
-            //保存订单到数据库
-            //使用3阶段提交的分布式事务
-            OrderDbContext context = new OrderDbContext();
-          
+            //
+            #endregion
 
-            return DTController.DistTrans3PCRequest<bool>(productProxy, "1234567890",
+            //使用3阶段提交的分布式事务，保存订单到数据库
+            OrderDbContext context = new OrderDbContext();
+
+            DTController controller = new DTController(DT_Identity);
+            return controller.DistTrans3PCRequest<bool>(DTS_Proxy, 
                 context.CurrentDataBase,
                 c =>
                 {
@@ -73,7 +93,11 @@ namespace DistTransServices
                 });
         }
 
-       
+        /// <summary>
+        /// 从商品服务，获取商品信息
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <returns></returns>
         private async Task<ProductDto> GetProductInfo(int productId)
         {
             ServiceRequest request = new ServiceRequest();

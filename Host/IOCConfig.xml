@@ -22,8 +22,8 @@
       <Add Key="ManageService"  InterfaceName="IService"  FullClassName="TranstarAuction.Service.Runtime.ManageService" Assembly="TranstarAuctionServiceRuntime" />
     </IOC>
     <IOC Name="TestService">
-      <Add Key="Calculator" InterfaceName="IService" FullClassName="ServiceSample.TestCalculatorService" Assembly="ServiceSample" />
-      <Add Key="TestTimeService" InterfaceName="IService" FullClassName="ServiceSample.TestTimeService" Assembly="ServiceSample" />
+      <Add Key="DTCService" InterfaceName="IService" FullClassName="DistTransServices.DTCService" Assembly="DistTransServices" />
+      <Add Key="DemoService" InterfaceName="IService" FullClassName="DistTransServices.DemoService" Assembly="DistTransServices" />
       <Add Key="AlarmClockService" InterfaceName="IService" FullClassName="ServiceSample.AlarmClockService" Assembly="ServiceSample" />
     </IOC>
     <IOC Name="ServiceModel">

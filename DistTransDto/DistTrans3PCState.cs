@@ -12,6 +12,14 @@ namespace DistTransServices
     public enum DistTrans3PCState
     {
         /// <summary>
+        /// 未知状态，事务状态还未开始跟踪
+        /// </summary>
+        UnKnow,
+        /// <summary>
+        /// 通信中断状态，在任意阶段都可能发生，如果事务已经开启，应该回滚事务
+        /// </summary>
+        CommunicationInterrupt,
+        /// <summary>
         /// 协调服务器：1阶段，执行事务，准备提交
         /// </summary>
         CanCommit,
