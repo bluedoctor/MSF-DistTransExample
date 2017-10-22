@@ -1,4 +1,5 @@
-﻿using DistTransServices;
+﻿using DistTransDto;
+using DistTransServices;
 using PWMIS.EnterpriseFramework.Service.Basic;
 using PWMIS.EnterpriseFramework.Service.Client;
 using System;
@@ -38,6 +39,37 @@ namespace DistTransClient
             Console.WriteLine("当前客户端代理的服务基础地址是：{0}", client.ServiceBaseUri);
             Console.WriteLine();
             Console.WriteLine("MSF 分布式事务 模式调用示例：");
+            //TestSample(client);
+
+            TestCreateOrder(client);
+          
+            Console.ReadLine();
+
+        }
+
+        private static void TestCreateOrder(Proxy client)
+        {
+            List<BuyProductDto> buyProducts = new List<BuyProductDto>();
+            buyProducts.Add(new BuyProductDto() {  ProductId=1, BuyNumber=3});
+            buyProducts.Add(new BuyProductDto() { ProductId =2, BuyNumber = 1 });
+
+            int orderId = 1000;
+            int userId = 100;
+
+            ServiceRequest request = new ServiceRequest();
+            request.ServiceName = "OrderService";
+            request.MethodName = "CreateOrder";
+            request.Parameters = new object[] { orderId,userId, buyProducts };
+
+            bool result=client.RequestServiceAsync<bool>(request).Result;
+            if(result)
+                Console.WriteLine("创建订单成功，订单号：{0}",orderId);
+            else
+                Console.WriteLine("创建订单失败，订单号：{0}", orderId);
+        }
+
+        private static void TestSample(Proxy client)
+        {
             /*
             ServiceRequest request = new ServiceRequest();
             request.ServiceName = "DTCService";
@@ -66,8 +98,8 @@ namespace DistTransClient
             ServiceRequest request = new ServiceRequest();
             request.ServiceName = "DemoService";
             request.MethodName = "TransactionTest";
-            request.Parameters = new object[] { 3,2 };
-            
+            request.Parameters = new object[] { 3, 2 };
+
             /*
             Task<bool> task = client.RequestServiceAsync<bool, string, string>(request,
                 s =>
@@ -97,13 +129,15 @@ namespace DistTransClient
             {
                 Console.WriteLine("访问服务错误：{0}",ex.Message);
             }
-             */ 
+             */
 
-            client.RequestService<bool, string, string>(request.ServiceUrl, PWMIS.EnterpriseFramework.Common.DataType.Text, 
-                r=>{
+            client.RequestService<bool, string, string>(request.ServiceUrl, PWMIS.EnterpriseFramework.Common.DataType.Text,
+                r =>
+                {
                     Console.WriteLine("服务访问完成，结果：{0}", r);
                 },
-                s => {
+                s =>
+                {
                     Console.WriteLine("接收到服务器指令：{0}", s);
                     Console.WriteLine("即将回复服务器，请输入回复内容(yes/no/错误信息)，也可以直接关闭本进程。");
                     string rep = Console.ReadLine();
@@ -128,10 +162,6 @@ namespace DistTransClient
                 repMsg = Console.ReadLine();
                 client.SendTextMessage(repMsg);
             }
-
-          
-            Console.ReadLine();
-
         }
 
         static void client_ErrorMessage(object sender, MessageSubscriber.MessageEventArgs e)

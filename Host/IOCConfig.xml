@@ -23,6 +23,8 @@
     </IOC>
     <IOC Name="TestService">
       <Add Key="DTCService" InterfaceName="IService" FullClassName="DistTransServices.DTCService" Assembly="DistTransServices" />
+      <Add Key="OrderService" InterfaceName="IService" FullClassName="DistTransServices.OrderService" Assembly="DistTransServices" />
+      <Add Key="ProductService" InterfaceName="IService" FullClassName="DistTransServices.ProductService" Assembly="DistTransServices" />
       <Add Key="DemoService" InterfaceName="IService" FullClassName="DistTransServices.DemoService" Assembly="DistTransServices" />
       <Add Key="AlarmClockService" InterfaceName="IService" FullClassName="ServiceSample.AlarmClockService" Assembly="ServiceSample" />
     </IOC>

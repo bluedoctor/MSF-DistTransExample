@@ -6,6 +6,7 @@ using PWMIS.DataProvider.Data;
 using PWMIS.EnterpriseFramework.Common;
 using PWMIS.EnterpriseFramework.Service.Basic;
 using PWMIS.EnterpriseFramework.Service.Client;
+using PWMIS.EnterpriseFramework.Service.Runtime;
 //using PWMIS.EnterpriseFramework.Service.Basic;
 //using PWMIS.EnterpriseFramework.Service.Client;
 using System;
@@ -16,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace DistTransServices
 {
-    public class OrderService
+    public class OrderService:ServiceBase
     {
         Proxy productProxy;
         Proxy DTS_Proxy;

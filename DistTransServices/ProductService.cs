@@ -44,7 +44,8 @@ namespace DistTransServices
             ProductDto dto = new ProductDto();
             if (entity != null)
             {
-                entity.MapToPOCO(dto);
+                //entity.MapToPOCO(dto);
+                entity.CopyTo<ProductDto>(dto);
             }
             return dto;
         }
