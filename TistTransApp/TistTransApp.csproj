@@ -75,7 +75,7 @@
     </Reference>
     <Reference Include="PWMIS.EnterpriseFramework.Message.PublisherLib, Version=1.0.1.0, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\PDF.Net.MSF.Service.Host.1.0.5\lib\PWMIS.EnterpriseFramework.Message.PublisherLib.dll</HintPath>
+      <HintPath>..\packages\PDF.Net.MSF.Service.Host.1.0.7\lib\PWMIS.EnterpriseFramework.Message.PublisherLib.dll</HintPath>
     </Reference>
     <Reference Include="PWMIS.EnterpriseFramework.Message.PublishService, Version=1.0.0.0, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

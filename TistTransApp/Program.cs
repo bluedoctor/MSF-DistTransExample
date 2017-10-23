@@ -58,12 +58,16 @@ namespace TistTransApp
             Console.WriteLine();
 
             int portProduct = 12306;
-            Console.WriteLine("启动 【商品服务】宿主，端口号：{0}", portProduct);
-            System.Diagnostics.Process.Start("PdfNetEF.MessageServiceHost.exe", "127.0.0.1 "+portProduct);
+            Console.Write("启动 【商品服务】宿主，端口号：{0}", portProduct);
+            var processProduct =System.Diagnostics.Process.Start("PdfNetEF.MessageServiceHost.exe", "127.0.0.1 "+portProduct);
+            Console.WriteLine(" ,进程ID：{0}",processProduct.Id);
+            Console.WriteLine();
 
             int portOrder = 12308;
-            Console.WriteLine("启动 【商品服务】宿主，端口号：{0}", portOrder);
-            System.Diagnostics.Process.Start("PdfNetEF.MessageServiceHost.exe", "127.0.0.1 " + portOrder);
+            Console.Write("启动 【订单服务】宿主，端口号：{0}", portOrder);
+            var processOrder = System.Diagnostics.Process.Start("PdfNetEF.MessageServiceHost.exe", "127.0.0.1 " + portOrder);
+            Console.WriteLine(" ,进程ID：{0}", processOrder.Id);
+            Console.WriteLine();
             Console.WriteLine("服务全部启动完成，按任意键关闭本程序");
             Console.Read();
         }

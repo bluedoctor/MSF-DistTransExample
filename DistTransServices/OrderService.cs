@@ -42,52 +42,55 @@ namespace DistTransServices
             //在分布式事务的发起端，需要先定义分布式事务标识：
             string DT_Identity = System.Guid.NewGuid().ToString();
 
-            //先请求商品服务，扣减库存，并获取商品的仓库信息
-            ServiceRequest request = new ServiceRequest();
-            request.ServiceName = "ProductService";
-            request.MethodName = "UpdateProductOnhand";
-            request.Parameters = new object[] { DT_Identity, buyItems };
-            List<SellProductDto> sellProducts = productProxy.RequestServiceAsync<List<SellProductDto>>(request).Result;
-
-            #region 构造订单明细和订单对象
-            //
-            List<OrderItemEntity> orderItems = new List<OrderItemEntity>();
-            OrderEntity order = new OrderEntity()
-            {
-                ID = orderId,
-                OwnerID = userId,
-                OrderTime = DateTime.Now,
-                OrderName="Prudoct:"
-            };
-            foreach (BuyProductDto item in buyItems)
-            {
-                ProductDto product = this.GetProductInfo(item.ProductId).Result;
-              
-                OrderItemEntity temp = new OrderItemEntity()
-                {
-                     OrderID = orderId,
-                      ProductID= product.ID,
-                       BuyNumber= item.BuyNumber,
-                        OnePrice= product.Price,
-                         ProductName= product.ProductName
-                };
-                temp.StoreHouse = (from i in sellProducts where i.ProductId == temp.ProductID select i.StoreHouse).FirstOrDefault();
-
-                orderItems.Add(temp);
-                order.OrderName += "," + temp.ProductName;
-                order.AmountPrice += temp.OnePrice * temp.BuyNumber;
-            }
-            //
-            #endregion
-
             //使用3阶段提交的分布式事务，保存订单到数据库
             OrderDbContext context = new OrderDbContext();
 
             DTController controller = new DTController(DT_Identity);
             return controller.DistTrans3PCRequest<bool>(DTS_Proxy, 
                 context.CurrentDataBase,
-                c =>
+                db =>
                 {
+                    //先请求商品服务，扣减库存，并获取商品的仓库信息
+                    ServiceRequest request = new ServiceRequest();
+                    request.ServiceName = "ProductService";
+                    request.MethodName = "UpdateProductOnhand";
+                    request.Parameters = new object[] { DT_Identity, buyItems };
+                    List<SellProductDto> sellProducts = productProxy.RequestServiceAsync<List<SellProductDto>>(request).Result;
+
+                    #region 构造订单明细和订单对象
+                    //
+                    List<OrderItemEntity> orderItems = new List<OrderItemEntity>();
+                    OrderEntity order = new OrderEntity()
+                    {
+                        ID = orderId,
+                        OwnerID = userId,
+                        OrderTime = DateTime.Now,
+                        OrderName = "Prudoct:"
+                    };
+                    foreach (BuyProductDto item in buyItems)
+                    {
+                        //注意：在商品数据库上，前面更新商品，但还没有提交事务，下面这个查询直接使用的话会导致查询等待，因为SQLSERVER的事务隔离级别是这样的
+                        //所以 GetProductInfo 的实现需要注意。
+                        ProductDto product = this.GetProductInfo(item.ProductId).Result;
+
+                        OrderItemEntity temp = new OrderItemEntity()
+                        {
+                            OrderID = orderId,
+                            ProductID = product.ID,
+                            BuyNumber = item.BuyNumber,
+                            OnePrice = product.Price,
+                            ProductName = product.ProductName
+                        };
+                        temp.StoreHouse = (from i in sellProducts where i.ProductId == temp.ProductID select i.StoreHouse).FirstOrDefault();
+
+                        orderItems.Add(temp);
+                        order.OrderName += "," + temp.ProductName;
+                        order.AmountPrice += temp.OnePrice * temp.BuyNumber;
+                    }
+                    //
+                    #endregion
+
+                    //保存订单数据到数据库
                     context.Add<OrderEntity>(order);
                     context.AddList<OrderItemEntity>(orderItems);
                     return true;

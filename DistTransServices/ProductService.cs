@@ -36,11 +36,12 @@ namespace DistTransServices
        /// <returns></returns>
         public ProductDto GetProductInfo(int productId)
         {
-            ProductEntity entity= OQL.From<ProductEntity>()
+            ProductDbContext context = new ProductDbContext();
+            ProductEntity entity= OQL.From<ProductEntity>().With(OQL.SqlServerLock.NOLOCK )
                 .Select()
                 .Where((cmp, p) => cmp.Comparer(p.ID,"=",productId))
                 .END
-                .ToObject();
+                .ToObject(context.CurrentDataBase);
             ProductDto dto = new ProductDto();
             if (entity != null)
             {
@@ -78,7 +79,7 @@ namespace DistTransServices
                 ProductEntity entity = new ProductEntity()
                 {
                     ID = item.ProductId,
-                    // Onhand= item.BuyNumber
+                    Onhand= item.BuyNumber
                 };
                 OQL q = OQL.From(entity)
                     .UpdateSelf('-', entity.Onhand)

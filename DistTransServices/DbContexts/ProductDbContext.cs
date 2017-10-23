@@ -34,7 +34,7 @@ namespace DistTransServices.DbContexts
                     list.Add(product);
                 }
                 EntityQuery<ProductEntity> query = new EntityQuery<ProductEntity>(this.CurrentDataBase);
-                query.QuickInsert(list);
+                query.Insert(list);
                 Console.WriteLine("初始化商品信息表,完成");
             }
             return true;
