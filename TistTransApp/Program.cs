@@ -13,6 +13,7 @@ namespace TistTransApp
             Console.WriteLine("MSF 分布式事务测试程序");
             Console.WriteLine("本测试程序将创建一个订单，并且扣减库存。");
             Console.WriteLine("在继续前，请确保事务协调器程序已经启动（程序位于 Host目录下的文件 PdfNetEF.MessageServiceHost.exe，双击启动，端口号：12345）");
+            Console.WriteLine("--当前进程ID：{0}--",System.Diagnostics.Process.GetCurrentProcess().Id);
 
             string MSF_Host = @"..\..\..\Host\PdfNetEF.MessageServiceHost.exe";
             if (!System.IO.File.Exists(MSF_Host))

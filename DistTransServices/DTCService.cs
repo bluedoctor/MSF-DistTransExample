@@ -61,12 +61,24 @@ namespace DistTransServices
 
         private DistTrans3PCState ResourceServerState;//事务资源服务器的状态
 
-        private static void WriteLog(string format, params object[] args)
+        static int _CurrentPID;
+        private static int CurrentPID
+        { 
+            get{
+                if (_CurrentPID == 0)
+                {
+                    _CurrentPID = System.Diagnostics.Process.GetCurrentProcess().Id;
+                }
+                return _CurrentPID;
+            }
+        }
+
+        private static void PrintLog(string format, params object[] args)
         {
             string text = string.Format(format, args);
             Console.WriteLine(text);
             string logFile = "Log\\MSFDTC"+DateTime.Now.ToString("yyyyMMdd")+".log";
-            string logText = string.Format("{0} {1}\r\n",DateTime.Now.ToString("HH:mm:ss.fff"), text);
+            string logText = string.Format("{0}[PID:{1}]\t {2}\r\n",DateTime.Now.ToString("HH:mm:ss.fff"),CurrentPID, text);
             try
             {
                 System.IO.File.AppendAllText(logFile, logText);
@@ -164,7 +176,7 @@ namespace DistTransServices
                     if (waiteTime >= MAX_WAIT_TIME)
                     {
                         this.TransAbort = true;
-                        WriteLog("MSF DTC{0} 1PC waite timeout ({1} ms),transaction Abort.", this.TransIdentity,MAX_WAIT_TIME);                    
+                        PrintLog("MSF DTC{0} 1PC waite timeout ({1} ms),transaction Abort.", this.TransIdentity,MAX_WAIT_TIME);                    
                     }
                     if (this.TransAbort)
                     {
@@ -195,7 +207,7 @@ namespace DistTransServices
                     if (waiteTime >= 10000)
                     {
                         this.TransAbort = true;
-                        WriteLog("MSF DTC({0}) 2PC waite timeout ({1} ms),transaction Abort.", this.TransIdentity,waiteTime);     
+                        PrintLog("MSF DTC({0}) 2PC waite timeout ({1} ms),transaction Abort.", this.TransIdentity,waiteTime);     
                     }
                     
                     if (this.TransAbort)
@@ -251,12 +263,12 @@ namespace DistTransServices
             client.RequestService<bool, DistTrans3PCState, DistTrans3PCState>(request.ServiceUrl, resultDataType,
                 r=>
                 {
-                    WriteLog("MSF DTC({0}) Controller Process Reuslt:{1},Receive time:{2}", transIdentity, r,DateTime.Now.ToString("HH:mm:ss.fff"));
+                    PrintLog("MSF DTC({0}) Controller Process Reuslt:{1},Receive time:{2}", transIdentity, r,DateTime.Now.ToString("HH:mm:ss.fff"));
                     client.Close();
                 },
                 s =>
                 {
-                    WriteLog("MSF DTC({0}) Resource at {1} receive DTC Controller state:{2}", transIdentity, DateTime.Now.ToString("HH:mm:ss.fff"), s);
+                    PrintLog("MSF DTC({0}) Resource at {1} receive DTC Controller state:{2}", transIdentity, DateTime.Now.ToString("HH:mm:ss.fff"), s);
                     if (s == DistTrans3PCState.CanCommit)
                     {
                         try
@@ -267,7 +279,7 @@ namespace DistTransServices
                         }
                         catch (Exception ex)
                         {
-                            WriteLog(ex.Message);
+                            PrintLog(ex.Message);
                             ResourceServerState = DistTrans3PCState.Rep_No_1PC;
                             tcs.SetException(ex);
                         }
@@ -275,7 +287,7 @@ namespace DistTransServices
                         new Task(() =>
                         {
                             DateTime currOptTime = DateTime.Now;
-                            WriteLog("MSF DTC({0}) 1PC,Child moniter task has started at time:{1}", transIdentity, currOptTime.ToString("HH:mm:ss.fff"));
+                            PrintLog("MSF DTC({0}) 1PC,Child moniter task has started at time:{1}", transIdentity, currOptTime.ToString("HH:mm:ss.fff"));
 
                             while (ResourceServerState != DistTrans3PCState.Completed)
                             {
@@ -287,11 +299,11 @@ namespace DistTransServices
                                     {
                                         TryRollback(dbHelper);
                                         client.Close();
-                                        WriteLog("** MSF DTC({0}) 1PC,Child moniter task check Communication Interrupt ,Rollback Transaction,task break!", transIdentity);
+                                        PrintLog("** MSF DTC({0}) 1PC,Child moniter task check Communication Interrupt ,Rollback Transaction,task break!", transIdentity);
                                     }
                                     else
                                     {
-                                        WriteLog("MSF DTC({0}) 1PC,Child moniter task find DistTrans3PCState has changed,Now is {1},task break!", transIdentity, ResourceServerState);
+                                        PrintLog("MSF DTC({0}) 1PC,Child moniter task find DistTrans3PCState has changed,Now is {1},task break!", transIdentity, ResourceServerState);
                                     }
                                     break;
                                 }
@@ -302,7 +314,7 @@ namespace DistTransServices
                                     {
                                         TryRollback(dbHelper);
                                         client.Close();
-                                        WriteLog("** MSF DTC({0}) 1PC,Child moniter task check Opreation timeout,Rollback Transaction,task break!", transIdentity);
+                                        PrintLog("** MSF DTC({0}) 1PC,Child moniter task check Opreation timeout,Rollback Transaction,task break!", transIdentity);
                                         break;
                                     }
                                 }
@@ -319,7 +331,7 @@ namespace DistTransServices
                         new Task(() =>
                         {
                             DateTime currOptTime = DateTime.Now;
-                            WriteLog("MSF DTC({0}) 2PC,Child moniter task has started at time:{1}", transIdentity, currOptTime.ToString("HH:mm:ss.fff"));
+                            PrintLog("MSF DTC({0}) 2PC,Child moniter task has started at time:{1}", transIdentity, currOptTime.ToString("HH:mm:ss.fff"));
 
                             while (ResourceServerState != DistTrans3PCState.Completed)
                             {
@@ -332,13 +344,13 @@ namespace DistTransServices
                                         if (DateTime.Now.Subtract(currOptTime).TotalMilliseconds < 1000)
                                         {
                                             TryRollback(dbHelper);
-                                            WriteLog("** MSF DTC({0}) 2PC,Child moniter find Communication Interrupt ,task break!", transIdentity);
+                                            PrintLog("** MSF DTC({0}) 2PC,Child moniter find Communication Interrupt ,task break!", transIdentity);
                                         }
                                         else
                                         {
                                             //否则，1秒后才发现连接已经断开，预提交确认信号大概率已经发送过去，不用再等，提交本地事务
                                             TryCommit(dbHelper);
-                                            WriteLog("MSF DTC({0}) 2PC,Child moniter find Communication Interrupt,but ACK_Yes_2PC send ok,tansaction Commit ,task break!", transIdentity);
+                                            PrintLog("MSF DTC({0}) 2PC,Child moniter find Communication Interrupt,but ACK_Yes_2PC send ok,tansaction Commit ,task break!", transIdentity);
                                         }
                                         //已经结束事务，关闭通信连接
                                         client.Close();
@@ -346,7 +358,7 @@ namespace DistTransServices
                                     else
                                     {
                                         //如果通信未中断且已经是其它状态，退出当前子任务
-                                        WriteLog("MSF DTC({0}) 2PC,Child moniter task find DistTrans3PCState has changed,Now is {1},task break!", transIdentity, ResourceServerState);
+                                        PrintLog("MSF DTC({0}) 2PC,Child moniter task find DistTrans3PCState has changed,Now is {1},task break!", transIdentity, ResourceServerState);
                                     }
                                     break;
                                 }
@@ -357,7 +369,7 @@ namespace DistTransServices
                                     {
                                         TryCommit(dbHelper);
                                         client.Close();
-                                        WriteLog("** MSF DTC({0}) 2PC,Child moniter task check Opreation timeout,Commit Transaction,task break!", transIdentity);
+                                        PrintLog("** MSF DTC({0}) 2PC,Child moniter task check Opreation timeout,Commit Transaction,task break!", transIdentity);
                                         break;
                                     }
                                 }
@@ -374,15 +386,11 @@ namespace DistTransServices
                     }
                     else if (s == DistTrans3PCState.DoCommit)
                     {
-                        try
-                        {
-                            dbHelper.Commit();
+                        if(TryCommit(dbHelper))
                             ResourceServerState = DistTrans3PCState.Rep_Yes_3PC;
-                        }
-                        catch
-                        {
+                        else
                             ResourceServerState = DistTrans3PCState.Rep_No_3PC;
-                        }
+                       
                         return ResourceServerState;
                     }
                     else
@@ -391,7 +399,7 @@ namespace DistTransServices
                         ResourceServerState = s;
                         if (s == DistTrans3PCState.Completed)
                         {
-                            WriteLog("MSF DTC({0}) 3PC Request Completed,use time:{1} seconds.",transIdentity, DateTime.Now.Subtract(dtcReqTime).TotalSeconds);
+                            PrintLog("MSF DTC({0}) 3PC Request Completed,use time:{1} seconds.",transIdentity, DateTime.Now.Subtract(dtcReqTime).TotalSeconds);
                         }
                         return s;
                     }
@@ -406,48 +414,49 @@ namespace DistTransServices
             }
             catch (Exception ex)
             {
-                WriteLog("Task Error:{0}", ex.Message);
-                WriteLog("Try Rollback..");
-                try
-                {
-                    dbHelper.Rollback();
-                    WriteLog("Try Rollback..OK!");
-                }
-                catch (Exception ex1)
-                {
-                    WriteLog("Try Rollback..Error:{0}", ex1.Message);
-                }
+                PrintLog("MSF DTC({0}) Task Error:{1}", transIdentity,ex.Message);
+                TryRollback(dbHelper);
             }
 
             return default(T);
         }
 
-        private void TryRollback(AdoHelper db)
+        private bool TryRollback(AdoHelper db)
         {
             try
             {
-                db.Commit();
+                PrintLog("MSF DTC({0}) Try Rollback..", this.TransIdentity);
+                db.Rollback();
+                PrintLog("MSF DTC({0}) Try Rollback..OK", this.TransIdentity);
+                return true;
             }
-            catch
+            catch (Exception ex)
             {
+                PrintLog("MSF DTC({0}) Try Rollback..Error:{1}", this.TransIdentity, ex.Message);
+                return false;
             }
         }
 
-        private void TryCommit(AdoHelper db)
+        private bool TryCommit(AdoHelper db)
         {
             try
             {
+                PrintLog("MSF DTC({0}) Try Commit..",this.TransIdentity);
                 db.Commit();
+                PrintLog("MSF DTC({0}) Try Commit..OK", this.TransIdentity);
+                return true;
             }
-            catch
+            catch(Exception ex)
             {
+                PrintLog("MSF DTC({0}) Try Commit..Error:{1}", this.TransIdentity,ex.Message);
+                return false;
             }
         }
 
         void client_ErrorMessage(object sender, MessageSubscriber.MessageEventArgs e)
         {
             ResourceServerState = DistTrans3PCState.CommunicationInterrupt;
-            WriteLog("MSF DTC Service Proxy Error:" + e.MessageText);
+            PrintLog("MSF DTC({0}) Service Proxy Error:{1}" ,this.TransIdentity, e.MessageText);
         }
 
     }
@@ -522,15 +531,15 @@ namespace DistTransServices
                 base.CurrentContext.Request.ClientIdentity);
             try
             {
+                Console.WriteLine("DTC Service Callback {0} Message:{1}", clientIdentity, CurrentDTCState);
                 info.CurrentDTCState = base.CurrentContext.CallBackFunction<DistTrans3PCState, DistTrans3PCState>(CurrentDTCState);
                 info.LastStateTime = DateTime.Now;
                 CurrentDTCState = controller.GetDTCState(info.CurrentDTCState);
-                Console.WriteLine("DTCService Callback {0} Message:{1}", clientIdentity, CurrentDTCState);
                 return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("DTCService Callback {0}  Error:{1}", clientIdentity, ex.Message);
+                Console.WriteLine("DTC Service Callback {0}  Error:{1}", clientIdentity, ex.Message);
                 return false;
             }
         }
