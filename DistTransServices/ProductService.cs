@@ -36,12 +36,24 @@ namespace DistTransServices
        /// <returns></returns>
         public ProductDto GetProductInfo(int productId)
         {
+            Console.WriteLine("---------2,--Session ID:{0}----------", base.CurrentContext.Session.SessionID);
+            /*
+             * 采用NOLOCK 方式查询
             ProductDbContext context = new ProductDbContext();
             ProductEntity entity= OQL.From<ProductEntity>().With(OQL.SqlServerLock.NOLOCK )
                 .Select()
                 .Where((cmp, p) => cmp.Comparer(p.ID,"=",productId))
                 .END
                 .ToObject(context.CurrentDataBase);
+            */
+            //下面采用更新库存的事务连接对象，不需要NoLock
+            ProductDbContext context = base.CurrentContext.Session.Get<ProductDbContext>("DbContext");
+            ProductEntity entity = OQL.From<ProductEntity>()
+              .Select()
+              .Where((cmp, p) => cmp.Comparer(p.ID, "=", productId))
+              .END
+              .ToObject(context.CurrentDataBase);
+
             ProductDto dto = new ProductDto();
             if (entity != null)
             {
@@ -70,6 +82,8 @@ namespace DistTransServices
            
         }
 
+
+
         private List<SellProductDto> InnerUpdateProductOnhand(ProductDbContext context, IEnumerable<BuyProductDto> buyItems)
         {
             List<SellProductDto> result = new List<SellProductDto>();
@@ -96,7 +110,8 @@ namespace DistTransServices
                     sell.StoreHouse = this.GetStoreHouse(item.ProductId);
                 result.Add(sell);
             }
-
+            base.CurrentContext.Session.Set<ProductDbContext>("DbContext", context);
+            Console.WriteLine("----------1,-Session ID:{0}----------", base.CurrentContext.Session.SessionID);
             return result;
         }
 
@@ -110,6 +125,14 @@ namespace DistTransServices
             string[] city = new string[] {"北京","上海","广州","深圳","天津","重庆","杭州","南京","武汉","成都" };
             int index = new Random().Next(10);
             return city[index];
+        }
+
+        public override bool ProcessRequest(IServiceContext context)
+        {
+            context.SessionRequired = true;
+            //客户端（订单服务）将使用事务标识作为连接的 RegisterData，因此采用这种会话模式
+            context.SessionModel = SessionModel.RegisterData;
+            return base.ProcessRequest(context);
         }
     }
 }

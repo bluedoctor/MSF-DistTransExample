@@ -41,6 +41,7 @@ namespace DistTransServices
         {
             //在分布式事务的发起端，需要先定义分布式事务标识：
             string DT_Identity = System.Guid.NewGuid().ToString();
+            productProxy.RegisterData = DT_Identity;
 
             //使用3阶段提交的分布式事务，保存订单到数据库
             OrderDbContext context = new OrderDbContext();
@@ -59,6 +60,7 @@ namespace DistTransServices
 
                     #region 构造订单明细和订单对象
                     //
+                    productProxy.Connect();
                     List<OrderItemEntity> orderItems = new List<OrderItemEntity>();
                     OrderEntity order = new OrderEntity()
                     {
@@ -71,7 +73,8 @@ namespace DistTransServices
                     {
                         //注意：在商品数据库上，前面更新商品，但还没有提交事务，下面这个查询直接使用的话会导致查询等待，因为SQLSERVER的事务隔离级别是这样的
                         //所以 GetProductInfo 的实现需要注意。
-                        ProductDto product = this.GetProductInfo(item.ProductId).Result;
+                        //ProductDto product = this.GetProductInfo(item.ProductId).Result;
+                        ProductDto product = this.GetProductInfoSync(item.ProductId);
 
                         OrderItemEntity temp = new OrderItemEntity()
                         {
@@ -88,6 +91,9 @@ namespace DistTransServices
                         order.AmountPrice += temp.OnePrice * temp.BuyNumber;
                     }
                     //
+                    //关闭商品服务订阅者连接
+                    productProxy.Close();
+
                     #endregion
 
                     //保存订单数据到数据库
@@ -98,7 +104,7 @@ namespace DistTransServices
         }
 
         /// <summary>
-        /// 从商品服务，获取商品信息
+        /// 从商品服务，获取商品信息。这种方式会使用新的连接
         /// </summary>
         /// <param name="productId"></param>
         /// <returns></returns>
@@ -110,6 +116,21 @@ namespace DistTransServices
             request.Parameters = new object[] { productId};
             return await productProxy.RequestServiceAsync<ProductDto>(request);
             
+        }
+
+        /// <summary>
+        /// （同步方式）从商品服务，获取商品信息。这种方式会使用之前打开的连接
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        private ProductDto GetProductInfoSync(int productId)
+        {
+            ServiceRequest request = new ServiceRequest();
+            request.ServiceName = "ProductService";
+            request.MethodName = "GetProductInfo";
+            request.Parameters = new object[] { productId };
+            return  productProxy.GetServiceMessage<ProductDto>(request, DataType.Json).Result;
+
         }
 
         private async Task<bool> UpdateProductOnhand(IEnumerable<BuyProductDto> buyItems)
