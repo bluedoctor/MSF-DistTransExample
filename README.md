@@ -1,35 +1,47 @@
 MSF-DistTransExample
 
-MSF ·Ö²¼Ê½ÊÂÎñÊ¾Àý£¬»ùÓÚ3½×¶ÎÌá½»µÄÊÂÎñ 
+MSF åˆ†å¸ƒå¼äº‹åŠ¡ç¤ºä¾‹ï¼ŒåŸºäºŽ3é˜¶æ®µæäº¤çš„äº‹åŠ¡ 
 ============================================
 
-! ¿ò¼ÜµÄ»ù±¾ÁË½â£º
-MSFÊÇÏûÏ¢·þÎñ¿ò¼ÜµÄ¼ò³Æ£¬ËüÊÇÒ»¸öÏûÏ¢ÍÆËÍºÍ·þÎñ´¦Àí¿ò¼Ü£¬ÏêÏ¸ÄÚÈÝÇë²Î¿¼£º
-¡°Ò»ÇÐ¶¼ÊÇÏûÏ¢¡±--MSF£¨ÏûÏ¢·þÎñ¿ò¼Ü£©ÈëÃÅ¼ò½é 
-http://www.cnblogs.com/bluedoctor/p/7605737.html
+æ¡†æž¶çš„åŸºæœ¬äº†è§£ï¼š
+   MSFæ˜¯æ¶ˆæ¯æœåŠ¡æ¡†æž¶çš„ç®€ç§°ï¼Œå®ƒæ˜¯ä¸€ä¸ªæ¶ˆæ¯æŽ¨é€å’ŒæœåŠ¡å¤„ç†æ¡†æž¶ï¼Œè¯¦ç»†å†…å®¹è¯·å‚è€ƒï¼š
+   
+   â€œä¸€åˆ‡éƒ½æ˜¯æ¶ˆæ¯â€--MSFï¼ˆæ¶ˆæ¯æœåŠ¡æ¡†æž¶ï¼‰å…¥é—¨ç®€ä»‹ 
+   http://www.cnblogs.com/bluedoctor/p/7605737.html
 
-µ±Ç°Ê¾ÀýµÄÊý¾Ý¿â·ÃÎÊ²ã¿ò¼Ü£¬Ê¹ÓÃµÄÊÇSOD¿ò¼Ü£¬ÓÐ¹ØSOD¿ò¼ÜµÄÈëÃÅ¼ò½é£¬Çë²Î¿¼£º
-http://pwmis.codeplex.com
-http://www.pwmis.com/sqlmap
+   å½“å‰ç¤ºä¾‹çš„æ•°æ®åº“è®¿é—®å±‚æ¡†æž¶ï¼Œä½¿ç”¨çš„æ˜¯SODæ¡†æž¶ï¼Œæœ‰å…³SODæ¡†æž¶çš„å…¥é—¨ç®€ä»‹ï¼Œè¯·å‚è€ƒï¼š
+   
+   http://pwmis.codeplex.com
+   http://www.pwmis.com/sqlmap
 
-! ÈçºÎÔËÐÐ±¾Ê¾Àý½â¾ö·½°¸£º
-1£¬ÇëÉèÖÃ½â¾ö·½°¸Îª¶àÏîÄ¿Æô¶¯£¬Æô¶¯ DistTransClientºÍ TistTransApp
-2£¬Èç¹ûÄãÃ»ÓÐ°²×° SQLSERVER 2016/2017 LocalDB,ÇëÏÂÔØ°²×°£¬»òÕßÐÞ¸ÄÏÂÃæµÄÅäÖÃÎÄ¼þ£º
+å¦‚ä½•è¿è¡Œæœ¬ç¤ºä¾‹è§£å†³æ–¹æ¡ˆ
+----------------------------
+
+1ï¼Œè¯·è®¾ç½®è§£å†³æ–¹æ¡ˆä¸ºå¤šé¡¹ç›®å¯åŠ¨ï¼Œå¯åŠ¨ DistTransClientå’Œ TistTransApp
+
+2ï¼Œå¦‚æžœä½ æ²¡æœ‰å®‰è£… SQLSERVER 2016/2017 LocalDB,è¯·ä¸‹è½½å®‰è£…ï¼Œæˆ–è€…ä¿®æ”¹ä¸‹é¢çš„é…ç½®æ–‡ä»¶ï¼š
    PdfNetEF.MessageServiceHost.exe.config
-   ÕÒµ½ÎÄ¼þÄÚµÄÁ¬½ÓÅäÖÃ£¬×¢ÊÍÆäËüµÄ£¬Ê¹ÓÃÄã¿ÉÒÔÊ¹ÓÃµÄÁ¬½ÓÅäÖÃ¡£
-3£¬ÔËÐÐ½â¾ö·½°¸£¬¸ù¾Ý TistTransApp ³ÌÐòµÄÌáÊ¾£¬Æô¶¯ÏÂÃæ3¸ö·þÎñ£º
-   # ÊÂÎñ¿ØÖÆÆ÷·þÎñ
-   # ÉÌÆ··þÎñ
-   # ¶©µ¥·þÎñ
+   æ‰¾åˆ°æ–‡ä»¶å†…çš„è¿žæŽ¥é…ç½®ï¼Œæ³¨é‡Šå…¶å®ƒçš„ï¼Œä½¿ç”¨ä½ å¯ä»¥ä½¿ç”¨çš„è¿žæŽ¥é…ç½®ã€‚
+   
+3ï¼Œè¿è¡Œè§£å†³æ–¹æ¡ˆï¼Œæ ¹æ® TistTransApp ç¨‹åºçš„æç¤ºï¼Œå¯åŠ¨ä¸‹é¢3ä¸ªæœåŠ¡ï¼š
+ Â  ### äº‹åŠ¡æŽ§åˆ¶å™¨æœåŠ¡
+ Â  ### å•†å“æœåŠ¡
+ Â  ### è®¢å•æœåŠ¡
 
-4£¬Èç¹ûÄãÐèÒªµ÷ÊÔ£¬¸ù¾ÝTistTransApp ³ÌÐòµÄÌáÊ¾µÄ¸÷¸ö·þÎñµÄ½ø³ÌID£¬ÓÃVS¸½¼Óµ÷ÊÔ¼´¿É¡£
+4ï¼Œå¦‚æžœä½ éœ€è¦è°ƒè¯•ï¼Œæ ¹æ®TistTransApp ç¨‹åºçš„æç¤ºçš„å„ä¸ªæœåŠ¡çš„è¿›ç¨‹IDï¼Œç”¨VSé™„åŠ è°ƒè¯•å³å¯ã€‚
 
-! ·Ö²¼Ê½ÊÂÎñÈý½×¶ÎÌá½»Ð­ÒéµÄÊµÏ°
-ÓÐ¹Ø3PCµÄÏêÏ¸ÀíÂÛ£¬Çë²Î¿¼ÍøÉÏ×ÊÁÏ£¬ºÜ¶à£¬ÕâÀï²»×öÏêÏ¸½éÉÜÁË£¬ÏÂÃæËµËµ±¾Ê¾Àý½â¾ö·½°¸¶Ô3PC ·Ö²¼Ê½ÊÂÎñ¿ØÖÆµÄÌØµã£º
-1£¬²ÉÓÃMSFµÄ³¤Á¬½Ó£¬Á¬½ÓÈç¹ûÓÐÒì³£¿ÉÒÔÂíÉÏ¼ì²âµ½¶ø²»ÓÃ³¬Ê±µÈ´ý£»
-2£¬¶Ô¶àÖÖÒì³£½øÐÐ¼ì²â£¬ÍêÕûÊµÏÖÁË3PCÀíÂÛÌÖÂÛÖÐµÄ¸÷ÖÖÒì³£´¦Àí£»
-3£¬ÖØµã¼ÓÇ¿ÁËÔ¤Ìá½»(PreCommit)µÄ´¦Àí²ßÂÔ;
-4£¬ÏêÏ¸µÄÊÂÎñ´¦ÀíÈÕÖ¾¼ÇÂ¼¡£
+åˆ†å¸ƒå¼äº‹åŠ¡ä¸‰é˜¶æ®µæäº¤åè®®çš„å®žçŽ°
+------------------------------
+æœ‰å…³3PCçš„è¯¦ç»†ç†è®ºï¼Œè¯·å‚è€ƒç½‘ä¸Šèµ„æ–™ï¼Œå¾ˆå¤šï¼Œè¿™é‡Œä¸åšè¯¦ç»†ä»‹ç»äº†ï¼Œä¸‹é¢è¯´è¯´æœ¬ç¤ºä¾‹è§£å†³æ–¹æ¡ˆå¯¹3PC åˆ†å¸ƒå¼äº‹åŠ¡æŽ§åˆ¶çš„ç‰¹ç‚¹ï¼š
+
+   1ï¼Œé‡‡ç”¨MSFçš„é•¿è¿žæŽ¥ï¼Œè¿žæŽ¥å¦‚æžœæœ‰å¼‚å¸¸å¯ä»¥é©¬ä¸Šæ£€æµ‹åˆ°è€Œä¸ç”¨è¶…æ—¶ç­‰å¾…ï¼›
+
+   2ï¼Œå¯¹å¤šç§å¼‚å¸¸è¿›è¡Œæ£€æµ‹ï¼Œå®Œæ•´å®žçŽ°äº†3PCç†è®ºè®¨è®ºä¸­çš„å„ç§å¼‚å¸¸å¤„ç†ï¼›
+
+   3ï¼Œé‡ç‚¹åŠ å¼ºäº†é¢„æäº¤(PreCommit)çš„å¤„ç†ç­–ç•¥;
+
+   4ï¼Œè¯¦ç»†çš„äº‹åŠ¡å¤„ç†æ—¥å¿—è®°å½•ã€‚
+
 
 bluedoctor, 2017.10.27
 
