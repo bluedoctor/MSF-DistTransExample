@@ -29,7 +29,7 @@ namespace DistTransClient
                 host = "127.0.0.1";
             Console.WriteLine("服务地址：{0}", host);
 
-            Console.Write("请输入服务的端口号(默认 8888)：");
+            Console.Write("请输入服务的端口号(默认 8888)，如果是订单服务，请输入 12308：");
             string port = Console.ReadLine();
             if (string.IsNullOrEmpty(port))
                 port = "8888";
@@ -53,7 +53,7 @@ namespace DistTransClient
             buyProducts.Add(new BuyProductDto() {  ProductId=1, BuyNumber=3});
             buyProducts.Add(new BuyProductDto() { ProductId =2, BuyNumber = 1 });
 
-            int orderId = 1000;
+            int orderId = 2000;
             int userId = 100;
 
             ServiceRequest request = new ServiceRequest();

@@ -37,10 +37,10 @@ namespace TistTransApp
             var keyInfo1 = Console.ReadKey();
             if (keyInfo1.KeyChar == 'y')
             {
-                System.IO.File.Copy(@"DataBase\OrdersDb.mdf", @"..\..\..\Host\DataBase\OrdersDb1.mdf", true);
-                System.IO.File.Copy(@"DataBase\OrdersDb_log.ldf", @"..\..\..\Host\DataBase\OrdersDb_log1.ldf", true);
-                System.IO.File.Copy(@"DataBase\ProductsDb.mdf", @"..\..\..\Host\DataBase\ProductsDb1.mdf", true);
-                System.IO.File.Copy(@"DataBase\ProductsDb_log.ldf", @"..\..\..\Host\DataBase\ProductsDb1_log.ldf", true);
+                System.IO.File.Copy(@"DataBase\OrdersDB_data.mdf", @"..\..\..\Host\DataBase\OrdersDB_data.mdf", true);
+                System.IO.File.Copy(@"DataBase\OrdersDB_log.ldf", @"..\..\..\Host\DataBase\OrdersDB_log.ldf", true);
+                System.IO.File.Copy(@"DataBase\ProductsDB_data.mdf", @"..\..\..\Host\DataBase\ProductsDB_data.mdf", true);
+                System.IO.File.Copy(@"DataBase\ProductsDB_log.ldf", @"..\..\..\Host\DataBase\ProductsDB_log.ldf", true);
                 Console.WriteLine(" 已经复制4个文件");
             }
             Console.WriteLine();

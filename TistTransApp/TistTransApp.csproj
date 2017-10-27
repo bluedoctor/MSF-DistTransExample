@@ -12,6 +12,8 @@
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <NuGetPackageImportStamp>b6c87d76</NuGetPackageImportStamp>
     <PublishUrl>发布\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -24,10 +26,8 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <NuGetPackageImportStamp>b6c87d76</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -67,43 +67,43 @@
     </Reference>
     <Reference Include="PWMIS.EnterpriseFramework.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\PDF.NET.EnterpriseFramework.1.0.5\lib\net40\PWMIS.EnterpriseFramework.Common.dll</HintPath>
+      <HintPath>..\packages\PDF.NET.EnterpriseFramework.1.1.1\lib\net40\PWMIS.EnterpriseFramework.Common.dll</HintPath>
     </Reference>
     <Reference Include="PWMIS.EnterpriseFramework.IOC, Version=1.0.1.2, Culture=neutral, PublicKeyToken=12f382fa39d72522, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\PDF.NET.EnterpriseFramework.1.0.5\lib\net40\PWMIS.EnterpriseFramework.IOC.dll</HintPath>
+      <HintPath>..\packages\PDF.NET.EnterpriseFramework.1.1.1\lib\net40\PWMIS.EnterpriseFramework.IOC.dll</HintPath>
     </Reference>
-    <Reference Include="PWMIS.EnterpriseFramework.Message.PublisherLib, Version=1.1.10.26, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
+    <Reference Include="PWMIS.EnterpriseFramework.Message.PublisherLib, Version=1.1.10.27, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\PDF.Net.MSF.Service.Host.1.1.0\lib\PWMIS.EnterpriseFramework.Message.PublisherLib.dll</HintPath>
+      <HintPath>..\packages\PDF.Net.MSF.Service.Host.1.1.1\lib\PWMIS.EnterpriseFramework.Message.PublisherLib.dll</HintPath>
     </Reference>
-    <Reference Include="PWMIS.EnterpriseFramework.Message.PublishService, Version=1.0.0.0, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
+    <Reference Include="PWMIS.EnterpriseFramework.Message.PublishService, Version=1.1.10.27, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\PDF.Net.MSF.Client.1.1.0\lib\net40\PWMIS.EnterpriseFramework.Message.PublishService.dll</HintPath>
+      <HintPath>..\packages\PDF.Net.MSF.Client.1.1.1\lib\net40\PWMIS.EnterpriseFramework.Message.PublishService.dll</HintPath>
     </Reference>
     <Reference Include="PWMIS.EnterpriseFramework.Message.SubscriberLib, Version=1.1.10.26, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\PDF.Net.MSF.Client.1.1.0\lib\net40\PWMIS.EnterpriseFramework.Message.SubscriberLib.dll</HintPath>
+      <HintPath>..\packages\PDF.Net.MSF.Client.1.1.1\lib\net40\PWMIS.EnterpriseFramework.Message.SubscriberLib.dll</HintPath>
     </Reference>
     <Reference Include="PWMIS.EnterpriseFramework.ModuleRoute, Version=1.0.7.5, Culture=neutral, PublicKeyToken=12f382fa39d72522, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\PDF.NET.EnterpriseFramework.1.0.5\lib\net40\PWMIS.EnterpriseFramework.ModuleRoute.dll</HintPath>
+      <HintPath>..\packages\PDF.NET.EnterpriseFramework.1.1.1\lib\net40\PWMIS.EnterpriseFramework.ModuleRoute.dll</HintPath>
     </Reference>
-    <Reference Include="PWMIS.EnterpriseFramework.Service.Basic, Version=1.0.0.1, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
+    <Reference Include="PWMIS.EnterpriseFramework.Service.Basic, Version=1.1.10.26, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\PDF.NET.EnterpriseFramework.1.0.5\lib\net40\PWMIS.EnterpriseFramework.Service.Basic.dll</HintPath>
+      <HintPath>..\packages\PDF.NET.EnterpriseFramework.1.1.1\lib\net40\PWMIS.EnterpriseFramework.Service.Basic.dll</HintPath>
     </Reference>
     <Reference Include="PWMIS.EnterpriseFramework.Service.Client, Version=1.1.10.26, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\PDF.Net.MSF.Client.1.1.0\lib\net40\PWMIS.EnterpriseFramework.Service.Client.dll</HintPath>
+      <HintPath>..\packages\PDF.Net.MSF.Client.1.1.1\lib\net40\PWMIS.EnterpriseFramework.Service.Client.dll</HintPath>
     </Reference>
     <Reference Include="PWMIS.EnterpriseFramework.Service.Group, Version=1.0.0.0, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\PDF.Net.MSF.Server.Group.1.1.0\lib\PWMIS.EnterpriseFramework.Service.Group.dll</HintPath>
+      <HintPath>..\packages\PDF.Net.MSF.Server.Group.1.1.1\lib\PWMIS.EnterpriseFramework.Service.Group.dll</HintPath>
     </Reference>
     <Reference Include="PWMIS.EnterpriseFramework.Service.Runtime, Version=1.3.10.26, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\PDF.Net.MSF.Service.1.1.0\lib\PWMIS.EnterpriseFramework.Service.Runtime.dll</HintPath>
+      <HintPath>..\packages\PDF.Net.MSF.Service.1.1.1\lib\PWMIS.EnterpriseFramework.Service.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="PWMIS.SQLiteClient, Version=5.6.1.626, Culture=neutral, PublicKeyToken=17ba13a12b9fd814, processorArchitecture=MSIL">
       <HintPath>..\packages\PDF.NET.SOD.SQLite.Provider.5.6.1.831\lib\PWMIS.SQLiteClient.dll</HintPath>
@@ -133,19 +133,17 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="DataBase\OrdersDb.mdf">
+    <Content Include="DataBase\OrdersDB_data.mdf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="DataBase\OrdersDb_log.ldf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <DependentUpon>OrdersDb.mdf</DependentUpon>
     </Content>
-    <Content Include="DataBase\ProductsDb.mdf">
+    <Content Include="DataBase\ProductsDB_data.mdf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="DataBase\ProductsDb_log.ldf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <DependentUpon>ProductsDb.mdf</DependentUpon>
     </Content>
     <Content Include="IOCConfig.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

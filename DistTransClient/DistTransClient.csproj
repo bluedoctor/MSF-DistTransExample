@@ -39,23 +39,23 @@
     </Reference>
     <Reference Include="PWMIS.EnterpriseFramework.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\PDF.Net.MSF.Client.1.1.0\lib\net40\PWMIS.EnterpriseFramework.Common.dll</HintPath>
+      <HintPath>..\packages\PDF.Net.MSF.Client.1.1.1\lib\net40\PWMIS.EnterpriseFramework.Common.dll</HintPath>
     </Reference>
-    <Reference Include="PWMIS.EnterpriseFramework.Message.PublishService, Version=1.0.0.0, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
+    <Reference Include="PWMIS.EnterpriseFramework.Message.PublishService, Version=1.1.10.27, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\PDF.Net.MSF.Client.1.1.0\lib\net40\PWMIS.EnterpriseFramework.Message.PublishService.dll</HintPath>
+      <HintPath>..\packages\PDF.Net.MSF.Client.1.1.1\lib\net40\PWMIS.EnterpriseFramework.Message.PublishService.dll</HintPath>
     </Reference>
     <Reference Include="PWMIS.EnterpriseFramework.Message.SubscriberLib, Version=1.1.10.26, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\PDF.Net.MSF.Client.1.1.0\lib\net40\PWMIS.EnterpriseFramework.Message.SubscriberLib.dll</HintPath>
+      <HintPath>..\packages\PDF.Net.MSF.Client.1.1.1\lib\net40\PWMIS.EnterpriseFramework.Message.SubscriberLib.dll</HintPath>
     </Reference>
     <Reference Include="PWMIS.EnterpriseFramework.Service.Basic, Version=1.1.10.26, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\PDF.Net.MSF.Client.1.1.0\lib\net40\PWMIS.EnterpriseFramework.Service.Basic.dll</HintPath>
+      <HintPath>..\packages\PDF.Net.MSF.Client.1.1.1\lib\net40\PWMIS.EnterpriseFramework.Service.Basic.dll</HintPath>
     </Reference>
     <Reference Include="PWMIS.EnterpriseFramework.Service.Client, Version=1.1.10.26, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\PDF.Net.MSF.Client.1.1.0\lib\net40\PWMIS.EnterpriseFramework.Service.Client.dll</HintPath>
+      <HintPath>..\packages\PDF.Net.MSF.Client.1.1.1\lib\net40\PWMIS.EnterpriseFramework.Service.Client.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
