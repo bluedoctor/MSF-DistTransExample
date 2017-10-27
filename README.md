@@ -19,14 +19,14 @@ MSF 分布式事务示例，基于3阶段提交的事务
 
 1，请设置解决方案为多项目启动，启动 DistTransClient和 TistTransApp
 
-2，如果你没有安装 SQLSERVER 2016/2017 LocalDB,请下载安装，或者修改下面的配置文件：
+2，如果你没有安装 Visual Studio 2015以上的IDE，需要你单独下载 SQLSERVER Express 2016/2017 LocalDB,或者修改下面的配置文件：
    PdfNetEF.MessageServiceHost.exe.config
-   找到文件内的连接配置，注释其它的，使用你可以使用的连接配置。
+   找到文件内的连接配置，使用你可以使用的连接配置.
    
 3，运行解决方案，根据 TistTransApp 程序的提示，启动下面3个服务：
-   ### 事务控制器服务
-   ### 商品服务
-   ### 订单服务
+   * 事务控制器服务
+   * 商品服务
+   * 订单服务
 
 4，如果你需要调试，根据TistTransApp 程序的提示的各个服务的进程ID，用VS附加调试即可。
 
