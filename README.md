@@ -22,6 +22,7 @@ MSF 分布式事务示例，基于3阶段提交的事务
 2，如果你没有安装 Visual Studio 2015以上的IDE，需要你单独下载 SQLSERVER Express 2016/2017 LocalDB,或者修改下面的配置文件：
    PdfNetEF.MessageServiceHost.exe.config
    找到文件内的连接配置，使用你可以使用的连接配置.
+   注意：如果你使用SQLite数据库，请在执行前，看到Host目录下是否有 x86,x64两个目录，如果没有，请从 TistTransApp运行目录拷贝。
    
 3，运行解决方案，根据 TistTransApp 程序的提示，启动下面3个服务：
    * 事务控制器服务

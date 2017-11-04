@@ -13,7 +13,7 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <NuGetPackageImportStamp>b6c87d76</NuGetPackageImportStamp>
+    <NuGetPackageImportStamp>7f59bf67</NuGetPackageImportStamp>
     <PublishUrl>发布\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -54,15 +54,15 @@
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="PWMIS.Access.Extensions, Version=5.5.0.1210, Culture=neutral, PublicKeyToken=17ba13a12b9fd814, processorArchitecture=MSIL">
-      <HintPath>..\packages\PDF.NET.SOD.Access.Provider.5.6.1.831\lib\PWMIS.Access.Extensions.dll</HintPath>
+      <HintPath>..\packages\PDF.NET.SOD.Access.Provider.5.6.1.1101\lib\PWMIS.Access.Extensions.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="PWMIS.Core, Version=5.6.1.829, Culture=neutral, PublicKeyToken=17ba13a12b9fd814, processorArchitecture=MSIL">
-      <HintPath>..\packages\PDF.NET.SOD.Core.5.6.1.831\lib\PWMIS.Core.dll</HintPath>
+    <Reference Include="PWMIS.Core, Version=5.6.1.930, Culture=neutral, PublicKeyToken=17ba13a12b9fd814, processorArchitecture=MSIL">
+      <HintPath>..\packages\PDF.NET.SOD.Core.5.6.1.1101\lib\PWMIS.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="PWMIS.Core.Extensions, Version=5.6.1.829, Culture=neutral, PublicKeyToken=17ba13a12b9fd814, processorArchitecture=MSIL">
-      <HintPath>..\packages\PDF.NET.SOD.5.6.1.831\lib\PWMIS.Core.Extensions.dll</HintPath>
+      <HintPath>..\packages\PDF.NET.SOD.5.6.1.1101\lib\PWMIS.Core.Extensions.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="PWMIS.EnterpriseFramework.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
@@ -74,8 +74,8 @@
       <HintPath>..\packages\PDF.NET.EnterpriseFramework.1.1.1\lib\net40\PWMIS.EnterpriseFramework.IOC.dll</HintPath>
     </Reference>
     <Reference Include="PWMIS.EnterpriseFramework.Message.PublisherLib, Version=1.1.10.27, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\PDF.Net.MSF.Service.Host.1.1.1\lib\PWMIS.EnterpriseFramework.Message.PublisherLib.dll</HintPath>
+      <HintPath>..\packages\PDF.Net.MSF.Service.Host.1.1.2\lib\PWMIS.EnterpriseFramework.Message.PublisherLib.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="PWMIS.EnterpriseFramework.Message.PublishService, Version=1.1.10.27, Culture=neutral, PublicKeyToken=82fad09ee75ff39d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -105,8 +105,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\PDF.Net.MSF.Service.1.1.1\lib\PWMIS.EnterpriseFramework.Service.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="PWMIS.SQLiteClient, Version=5.6.1.626, Culture=neutral, PublicKeyToken=17ba13a12b9fd814, processorArchitecture=MSIL">
-      <HintPath>..\packages\PDF.NET.SOD.SQLite.Provider.5.6.1.831\lib\PWMIS.SQLiteClient.dll</HintPath>
+    <Reference Include="PWMIS.SQLiteClient, Version=5.6.1.1029, Culture=neutral, PublicKeyToken=17ba13a12b9fd814, processorArchitecture=MSIL">
+      <HintPath>..\packages\PDF.NET.SOD.SQLite.Provider.5.6.1.1101\lib\PWMIS.SQLiteClient.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -180,15 +180,15 @@ cd "$(SolutionDir)Host"
 start "MessageService Host"  "SucessCompiled.vbs" 
 </PostBuildEvent>
   </PropertyGroup>
-  <Import Project="..\packages\PDF.NET.SOD.Access.Provider.5.6.1.831\build\PDF.NET.SOD.Access.Provider.targets" Condition="Exists('..\packages\PDF.NET.SOD.Access.Provider.5.6.1.831\build\PDF.NET.SOD.Access.Provider.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>这台计算机上缺少此项目引用的 NuGet 程序包。启用“NuGet 程序包还原”可下载这些程序包。有关详细信息，请参阅 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的文件是 {0}。</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\PDF.NET.SOD.Access.Provider.5.6.1.831\build\PDF.NET.SOD.Access.Provider.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\PDF.NET.SOD.Access.Provider.5.6.1.831\build\PDF.NET.SOD.Access.Provider.targets'))" />
     <Error Condition="!Exists('..\packages\System.Data.SQLite.Core.1.0.105.2\build\net451\System.Data.SQLite.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\System.Data.SQLite.Core.1.0.105.2\build\net451\System.Data.SQLite.Core.targets'))" />
+    <Error Condition="!Exists('..\packages\PDF.NET.SOD.Access.Provider.5.6.1.1101\build\PDF.NET.SOD.Access.Provider.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\PDF.NET.SOD.Access.Provider.5.6.1.1101\build\PDF.NET.SOD.Access.Provider.targets'))" />
   </Target>
   <Import Project="..\packages\System.Data.SQLite.Core.1.0.105.2\build\net451\System.Data.SQLite.Core.targets" Condition="Exists('..\packages\System.Data.SQLite.Core.1.0.105.2\build\net451\System.Data.SQLite.Core.targets')" />
+  <Import Project="..\packages\PDF.NET.SOD.Access.Provider.5.6.1.1101\build\PDF.NET.SOD.Access.Provider.targets" Condition="Exists('..\packages\PDF.NET.SOD.Access.Provider.5.6.1.1101\build\PDF.NET.SOD.Access.Provider.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
