@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PWMIS.SQLiteClient</name>
+    </assembly>
+    <members>
+        <member name="T:PWMIS.DataProvider.Data.SQLiteDbContext">
+            <summary>
+            SQLite数据库上下文，可以实现自动检查数据库，创建表，获取EntityQuery 泛型实例对象等功能，封装了AdoHelper的使用。
+            </summary>
+        </member>
+        <member name="M:PWMIS.DataProvider.Data.SQLiteDbContext.#ctor(PWMIS.DataProvider.Data.AdoHelper)">
+            <summary>
+            用连接字符串名字初始化本类
+            </summary>
+        </member>
+        <member name="M:PWMIS.DataProvider.Data.SQLiteDbContext.CheckTableExists``1">
+            <summary>
+            检查实体类对应的数据表是否在数据库中存在
+            </summary>
+        </member>
+        <member name="M:PWMIS.DataProvider.Data.SQLiteDbContext.CheckTableExists``1(System.String)">
+            <summary>
+            检查实体类和表名对应的数据表是否在数据库中存在
+            </summary>
+            <param name="tableName">表名</param>
+            <typeparam name="T">实体类</typeparam>
+        </member>
+        <member name="M:PWMIS.DataProvider.Data.SQLiteDbContext.InitializeTable``1(System.String)">
+            <summary>
+            检查实体类对应的表是否存在，如果不存在则创建表并执行可选的SQL语句，比如为表增加索引等。
+            </summary>
+            <typeparam name="T">实体类类型</typeparam>
+            <param name="initSql">要初始化执行的SQL语句</param>
+        </member>
+        <member name="T:PWMIS.DataProvider.Data.SQLite">
+            <summary>
+            SQLite 数据访问类 dth,2012.11.1
+            </summary>
+        </member>
+        <member name="M:PWMIS.DataProvider.Data.SQLite.#ctor">
+            <summary>
+            默认构造函数
+            </summary>
+        </member>
+        <member name="M:PWMIS.DataProvider.Data.SQLite.GetConnection">
+            <summary>
+            创建并且打开数据库连接
+            </summary>
+            <returns>数据库连接</returns>
+        </member>
+        <member name="M:PWMIS.DataProvider.Data.SQLite.GetDataAdapter(System.Data.IDbCommand)">
+            <summary>
+            获取数据适配器实例
+            </summary>
+            <returns>数据适配器</returns>
+        </member>
+        <member name="M:PWMIS.DataProvider.Data.SQLite.GetParameter">
+            <summary>
+            获取一个新参数对象
+            </summary>
+            <returns>特定于数据源的参数对象</returns>
+        </member>
+        <member name="M:PWMIS.DataProvider.Data.SQLite.GetParameter(System.String,System.Data.DbType,System.Int32)">
+            <summary>
+             获取一个新参数对象
+            </summary>
+            <param name="paraName">参数名</param>
+            <param name="dbType">参数数据类型</param>
+            <param name="size">参数大小</param>
+            <returns>特定于数据源的参数对象</returns>
+        </member>
+        <member name="M:PWMIS.DataProvider.Data.SQLite.ExecuteNonQuery(System.String,System.Data.CommandType,System.String)">
+            <summary>
+            更新数据（为SQLite重写的支持多线程并发写入功能）
+            </summary>
+            <param name="connectionString"></param>
+            <param name="commandType"></param>
+            <param name="SQL"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PWMIS.DataProvider.Data.SQLite.ExecuteNonQuery(System.String,System.Data.CommandType,System.String,System.Data.IDataParameter[])">
+            <summary>
+            更新数据（为SQLite重写的支持多线程并发写入功能）
+            </summary>
+            <param name="connectionString"></param>
+            <param name="commandType"></param>
+            <param name="SQL"></param>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

@@ -154,3 +154,10 @@ $RECYCLE.BIN/
 
 # Mac desktop service store files
 .DS_Store
+/Host/DataBase
+/Host/Log
+/Host/SqlLog.txt
+/Host/TistTransApp.vshost.exe.manifest
+/Host/TistTransApp.vshost.exe.config
+/Host/TistTransApp.exe.config
+/.vs/MSF-DistTransExample/v15/Server/sqlite3

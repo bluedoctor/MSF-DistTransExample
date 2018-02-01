@@ -53,7 +53,7 @@ namespace DistTransClient
             buyProducts.Add(new BuyProductDto() {  ProductId=1, BuyNumber=3});
             buyProducts.Add(new BuyProductDto() { ProductId =2, BuyNumber = 1 });
 
-            int orderId = 2000;
+            int orderId = 8000;
             int userId = 100;
 
             ServiceRequest request = new ServiceRequest();
@@ -66,6 +66,33 @@ namespace DistTransClient
                 Console.WriteLine("创建订单成功，订单号：{0}",orderId);
             else
                 Console.WriteLine("创建订单失败，订单号：{0}", orderId);
+
+            Console.WriteLine("------开始并发下单测试，按任意键继续---------");
+            Console.ReadLine();
+
+            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
+            int taskCount = 10;
+            List<Task> tasks = new List<Task>();
+            for (int i = 1; i <= taskCount; i++)
+            {
+                Proxy client1 = new Proxy();
+                client1.ServiceBaseUri = client.ServiceBaseUri;
+
+                ServiceRequest request1 = new ServiceRequest();
+                request1.ServiceName = "OrderService";
+                request1.MethodName = "CreateOrder";
+                request1.Parameters = new object[] { orderId+i, userId, buyProducts };
+                var task = client1.RequestServiceAsync<bool>(request1);
+                tasks.Add(task);
+                Console.WriteLine("添加第 {0}个任务.",i);
+            }
+            Console.WriteLine("{0} 个订单请求任务创建完成，开始等待所有任务执行完成！",taskCount);
+            Task.WaitAll(tasks.ToArray());
+            Console.WriteLine("所有任务执行完成！");
+            sw.Stop();
+            Console.WriteLine("总耗时：{0}（s），TPS：{1}",sw.Elapsed.TotalSeconds,(double)taskCount /sw.Elapsed.TotalSeconds);
+
         }
 
         private static void TestSample(Proxy client)
