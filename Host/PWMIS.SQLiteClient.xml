@@ -70,6 +70,21 @@
             <param name="size">参数大小</param>
             <returns>特定于数据源的参数对象</returns>
         </member>
+        <member name="M:PWMIS.DataProvider.Data.SQLite.GetParameter(System.String,System.Object)">
+            <summary>
+            根据参数名和值返回参数一个新的参数对象
+            </summary>
+            <param name="paraName">参数名</param>
+            <param name="Value">参数值</param>
+            <returns>特定于数据源的参数对象</returns>
+        </member>
+        <member name="M:PWMIS.DataProvider.Data.SQLite.GetNativeDbTypeName(System.Data.IDataParameter)">
+            <summary>
+            获取本地数据库类型名
+            </summary>
+            <param name="para"></param>
+            <returns></returns>
+        </member>
         <member name="M:PWMIS.DataProvider.Data.SQLite.ExecuteNonQuery(System.String,System.Data.CommandType,System.String)">
             <summary>
             更新数据（为SQLite重写的支持多线程并发写入功能）

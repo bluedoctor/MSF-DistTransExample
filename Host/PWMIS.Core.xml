@@ -604,6 +604,11 @@
             <param name="recordAffected">命令执行的受影响记录行数</param>
             <returns>返回执行时间或者其它信息</returns>
         </member>
+        <member name="P:PWMIS.DataProvider.Data.ICommandHandle.ApplayExecuteType">
+            <summary>
+            获取当前处理器要应用的命令执行类型，只有符合该类型才会应用当前命令处理器
+            </summary>
+        </member>
         <member name="T:PWMIS.DataProvider.Data.CommandExecuteLogHandle">
             <summary>
             命令执行日志处理器，可以记录SQL和参数，执行时间等信息
@@ -612,6 +617,61 @@
         <member name="M:PWMIS.DataProvider.Data.CommandExecuteLogHandle.#ctor">
             <summary>
             初始化一个命令执行日志处理器
+            </summary>
+        </member>
+        <member name="P:PWMIS.DataProvider.Data.CommandExecuteLogHandle.ApplayExecuteType">
+            <summary>
+            获取当前处理器要应用的命令执行类型，只有符合该类型才会应用当前命令处理器
+            </summary>
+        </member>
+        <member name="T:PWMIS.DataProvider.Data.TransactionLogHandle">
+            <summary>
+            事务日志处理器，将记录事务型查询（例如增删改操作）的详细信息到当前连接的数据库的命令日志数据表
+            </summary>
+        </member>
+        <member name="M:PWMIS.DataProvider.Data.TransactionLogHandle.#ctor">
+            <summary>
+            默认构造函数
+            </summary>
+        </member>
+        <member name="P:PWMIS.DataProvider.Data.TransactionLogHandle.ApplayDBMSType">
+            <summary>
+            应用的数据库类型，支持所有
+            </summary>
+        </member>
+        <member name="P:PWMIS.DataProvider.Data.TransactionLogHandle.BeforLog">
+            <summary>
+            在记录事务日志之前的自定义处理
+            </summary>
+        </member>
+        <member name="M:PWMIS.DataProvider.Data.TransactionLogHandle.OnExecuted(System.Data.IDbCommand,System.Int32)">
+            <summary>
+            在主体查询执行成功后调用，插入命令日志记录
+            </summary>
+            <param name="cmd"></param>
+            <param name="recordAffected"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PWMIS.DataProvider.Data.TransactionLogHandle.OnExecuteError(System.Data.IDbCommand,System.String)">
+            <summary>
+            在事务过程中，暂不记录相关消息，可以查看SQL日志
+            </summary>
+            <param name="cmd"></param>
+            <param name="errorMessage"></param>
+        </member>
+        <member name="M:PWMIS.DataProvider.Data.TransactionLogHandle.OnExecuting(PWMIS.DataProvider.Data.CommonDB,System.String@,System.Data.CommandType,System.Data.IDataParameter[])">
+            <summary>
+            主体查询预备执行操作，这里会构造命令日志信息
+            </summary>
+            <param name="db">当前查询连接对象</param>
+            <param name="SQL">当前主体要执行的查询命令</param>
+            <param name="commandType">命令类型</param>
+            <param name="parameters">命令参数</param>
+            <returns>总是返回成功</returns>
+        </member>
+        <member name="P:PWMIS.DataProvider.Data.TransactionLogHandle.ApplayExecuteType">
+            <summary>
+            获取当前处理器要应用的命令执行类型，只有符合该类型才会应用当前命令处理器
             </summary>
         </member>
         <member name="T:PWMIS.DataProvider.Data.CommandLog">
@@ -824,6 +884,16 @@
             获取或者设置日志组件
             </summary>
         </member>
+        <member name="P:PWMIS.DataProvider.Data.CommonDB.ContextObject">
+            <summary>
+            上下文相关的对象，可能是实体类或者OQL，也可能为空
+            </summary>
+        </member>
+        <member name="P:PWMIS.DataProvider.Data.CommonDB.EnableCommandHandle">
+            <summary>
+            是否开启命令管道处理器，默认开启
+            </summary>
+        </member>
         <member name="M:PWMIS.DataProvider.Data.CommonDB.GetConnection">
             <summary>
             获取事务的数据连结对象
@@ -984,11 +1054,12 @@
             如果是拼接字符串方式的查询，建议设置为False，避免在拼接ＳＱＬ的时候过滤掉'@'等特殊字符
             </summary>
         </member>
-        <member name="M:PWMIS.DataProvider.Data.CommonDB.PrepareSQL(System.String)">
+        <member name="M:PWMIS.DataProvider.Data.CommonDB.PrepareSQL(System.String,System.Data.IDataParameter[])">
             <summary>
             对应SQL语句进行其它的处理，例如将SQLSERVER的字段名外的中括号替换成数据库特定的字符。该方法会在执行查询前调用，默认情况下不进行任何处理。
             </summary>
             <param name="sql"></param>
+            <param name="parameters"></param>
             <returns></returns>
         </member>
         <member name="M:PWMIS.DataProvider.Data.CommonDB.GetPreparedSQL(System.String)">
@@ -1013,6 +1084,32 @@
             注册一个命令处理器
             </summary>
             <param name="handle">命令处理器实例对象</param>
+        </member>
+        <member name="M:PWMIS.DataProvider.Data.CommonDB.OnCommandExecuting(System.String@,System.Data.CommandType,System.Data.IDataParameter[],PWMIS.Common.CommandExecuteType)">
+            <summary>
+            命令管道之命令处理之前的处理器处理，只要其中一个处理器不允许，后续都将不在处理，整个命令将无法执行。
+            </summary>
+            <param name="sql"></param>
+            <param name="commandType"></param>
+            <param name="parameters"></param>
+            <param name="executeType">查询类型</param>
+            <returns></returns>
+        </member>
+        <member name="M:PWMIS.DataProvider.Data.CommonDB.OnCommandExecuteError(System.Data.IDbCommand,System.String,PWMIS.Common.CommandExecuteType)">
+            <summary>
+            命令管道之命令执行失败后的处理
+            </summary>
+            <param name="cmd"></param>
+            <param name="errorMessage"></param>
+            <param name="executeType">查询类型</param>
+        </member>
+        <member name="M:PWMIS.DataProvider.Data.CommonDB.OnCommandExected(System.Data.IDbCommand,System.Int32,PWMIS.Common.CommandExecuteType)">
+            <summary>
+            命令管道之命令执行成功后的处理器
+            </summary>
+            <param name="cmd"></param>
+            <param name="recordAffected"></param>
+            <param name="executeType">查询类型</param>
         </member>
         <member name="M:PWMIS.DataProvider.Data.CommonDB.ExecuteNonQuery(System.String,System.Data.CommandType,System.Data.IDataParameter[])">
             <summary>
@@ -1191,6 +1288,26 @@
             释放连接
             </summary>
         </member>
+        <member name="T:PWMIS.DataProvider.Data.DbParameterSerialize">
+            <summary>
+            数据参数序列化类
+            </summary>
+        </member>
+        <member name="M:PWMIS.DataProvider.Data.DbParameterSerialize.Serialize(System.Data.IDataParameter[])">
+            <summary>
+            将数据查询参数序列化
+            </summary>
+            <param name="paras"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PWMIS.DataProvider.Data.DbParameterSerialize.DeSerialize(System.String,PWMIS.DataProvider.Data.AdoHelper)">
+            <summary>
+            将符合本类序列化结果的字符串执行反序列化
+            </summary>
+            <param name="input"></param>
+            <param name="db">数据访问对象</param>
+            <returns></returns>
+        </member>
         <member name="T:PWMIS.DataProvider.Data.Odbc">
             <summary>
             ODBC 数据访问类
@@ -1343,7 +1460,7 @@
             <param name="size">参数大小</param>
             <returns>特定于数据源的参数对象</returns>
         </member>
-        <member name="M:PWMIS.DataProvider.Data.Oracle.PrepareSQL(System.String)">
+        <member name="M:PWMIS.DataProvider.Data.Oracle.PrepareSQL(System.String,System.Data.IDataParameter[])">
             <summary>
             预处理SQL语句，语句中不能包含"["，"]"左右中括号，如果需要，请使用参数化查询。
             </summary>
@@ -1512,6 +1629,58 @@
             数据源类型
             </summary>
         </member>
+        <member name="T:PWMIS.Common.MyFunc`1">
+            <summary>
+            返回一个结果类型的泛型委托函数
+            </summary>
+            <typeparam name="TResult"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="T:PWMIS.Common.CommandExecuteType">
+            <summary>
+            命令执行的查询类型
+            </summary>
+        </member>
+        <member name="F:PWMIS.Common.CommandExecuteType.ExecuteNonQuery">
+            <summary>
+            执行没有结果集的查询，例如写查询
+            </summary>
+        </member>
+        <member name="F:PWMIS.Common.CommandExecuteType.ExecuteQuery">
+            <summary>
+            执行有返回值的查询
+            </summary>
+        </member>
+        <member name="F:PWMIS.Common.CommandExecuteType.Any">
+            <summary>
+            不限制的查询类型
+            </summary>
+        </member>
+        <member name="T:PWMIS.Common.SQLOperatType">
+            <summary>
+            SQL操作类型
+            </summary>
+        </member>
+        <member name="F:PWMIS.Common.SQLOperatType.Insert">
+            <summary>
+            增加操作，值为1
+            </summary>
+        </member>
+        <member name="F:PWMIS.Common.SQLOperatType.Delete">
+            <summary>
+            删除操作，值为2
+            </summary>
+        </member>
+        <member name="F:PWMIS.Common.SQLOperatType.Update">
+            <summary>
+            删除操作,值为4
+            </summary>
+        </member>
+        <member name="F:PWMIS.Common.SQLOperatType.Select">
+            <summary>
+            查询数据，值为8
+            </summary>
+        </member>
         <member name="T:PWMIS.Common.ParamMapType">
             <summary>
             参数结构
@@ -1577,6 +1746,11 @@
             默认类型，根据配置决定默认生成哪一种结果类型
             </summary>
             <remarks></remarks>
+        </member>
+        <member name="F:PWMIS.Common.enumResultClass.ObjectList">
+            <summary>
+            任意对象列表，要求对象属性名必须与字段名严格一致，否则请用EntityList类型，需要指定 ResuleMap 属性
+            </summary>
         </member>
         <member name="T:PWMIS.Common.enumCompare">
             <summary>
@@ -2023,7 +2197,7 @@
         </member>
         <member name="M:PWMIS.Common.SQLPage.MakePageSQLStringByMSSQL(System.String,System.String,System.Int32,System.Int32,System.Int32)">
             <summary>
-            MS SQLSERVER 分页SQL语句生成器，同样适用于ACCESS数据库
+            MS SQLSERVER 分页SQL语句生成器，同样适用于ACCESS数据库。如果分页记录数不大于0，则返回空字符串。
             </summary>
             <param name="strSQLInfo">原始SQL语句</param>
             <param name="strWhere">在分页前要替换的字符串，用于分页前的筛选</param>
@@ -2154,14 +2328,20 @@
         </member>
         <member name="M:PWMIS.Core.CommonUtil.NewSequenceGUID">
             <summary>
-            生成一个新的有序的长整形“GUID”，在一秒内，重复概率低于 万分之一，速度较快，线程安全，
+            生成一个新的在秒级别有序的长整形“GUID”，在一秒内，数据比较随机，线程安全，
             但不如NewUniqueSequenceGUID 方法结果更有序（不包含毫秒部分）
             </summary>
             <returns></returns>
         </member>
         <member name="M:PWMIS.Core.CommonUtil.NewUniqueSequenceGUID">
             <summary>
-            生成一个唯一的有序的GUID形式的长整数，速度较NewSequenceGUID 稍慢，但线程不安全
+            生成一个唯一的更加有序的GUID形式的长整数,在一秒内，重复概率低于 千万分之一，线程安全。可用于严格有序增长的ID
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:PWMIS.Core.CommonUtil.CurrentMachineID">
+            <summary>
+            当前机器ID，可以作为分布式ID，如果需要指定此ID，请在应用程序配置文件配置 SOD_MachineID 的值，范围大于100，小于1000.
             </summary>
             <returns></returns>
         </member>
@@ -2375,6 +2555,78 @@
             缓存的名字
             </summary>
         </member>
+        <member name="T:PWMIS.Core.MyCommandLogEntity">
+            <summary>
+            命令日志实体类(V3版本)
+            </summary>
+        </member>
+        <member name="M:PWMIS.Core.MyCommandLogEntity.#ctor">
+            <summary>
+            默认构造函数
+            </summary>
+        </member>
+        <member name="P:PWMIS.Core.MyCommandLogEntity.CommandID">
+            <summary>
+            命令ID，建议使用 CommonUtil.NewSequenceGUID() 获取分布式ID
+            </summary>
+        </member>
+        <member name="P:PWMIS.Core.MyCommandLogEntity.ExecuteTime">
+            <summary>
+            命令执行的时间
+            </summary>
+        </member>
+        <member name="P:PWMIS.Core.MyCommandLogEntity.LogFlag">
+            <summary>
+            命令日志的使用标记0表示为源库未处理，1表示源库已经处理，2表示已经复制到目标库，其它值为用户自定义的状态标记
+            </summary>
+        </member>
+        <member name="P:PWMIS.Core.MyCommandLogEntity.CommandText">
+            <summary>
+            执行的命令语句（如果语句超过4000个字符，外面将无法直接设置此属性；在数据库获取此属性值的时候，会显示为[LonqSql]=lengch 字样）
+            </summary>
+        </member>
+        <member name="P:PWMIS.Core.MyCommandLogEntity.SQLType">
+            <summary>
+            语句类型，取值为SQLOperatType 枚举
+            </summary>
+        </member>
+        <member name="P:PWMIS.Core.MyCommandLogEntity.CommandType">
+            <summary>
+            命令类型
+            </summary>
+        </member>
+        <member name="P:PWMIS.Core.MyCommandLogEntity.CommandName">
+            <summary>
+            命令名字，对应的表名称，存储过程名字或者其它分类名
+            </summary>
+        </member>
+        <member name="P:PWMIS.Core.MyCommandLogEntity.ParameterInfo">
+            <summary>
+            命令参数信息
+            </summary>
+        </member>
+        <member name="P:PWMIS.Core.MyCommandLogEntity.LogTopic">
+            <summary>
+            命令日志的主题，比如要附加操作的数据条件，数据版本号等
+            </summary>
+        </member>
+        <member name="M:PWMIS.Core.MyCommandLogEntity.PrepairSQL(System.String,System.String)">
+            <summary>
+            准备写入，设置最终写入的SQL语句和参数等信息
+            </summary>
+        </member>
+        <member name="M:PWMIS.Core.MyCommandLogEntity.PrepairRead">
+            <summary>
+            准备读取，设置程序处理需要的真正的SQL语句和参数信息，如果不调用此方法，得到的是数据库原始存储的属性值
+            </summary>
+        </member>
+        <member name="M:PWMIS.Core.MyCommandLogEntity.ParseParameter(PWMIS.DataProvider.Data.AdoHelper)">
+            <summary>
+            根据参数信息字符串，解析当前查询语句对应的参数化对象数组。如果没有参数信息将返回空
+            </summary>
+            <param name="db">数据访问对象</param>
+            <returns></returns>
+        </member>
         <member name="M:PWMIS.Core.RemoteLoader.TableFieldName(System.String,System.String)">
             <summary>
             根据指定的实体类中的属性名，返回实体类的表名称和属性对应的字段名称
@@ -2455,7 +2707,7 @@
             获取一个新的有序GUID整数
             </summary>
             <param name="dt">当前时间</param>
-            <param name="haveMs">是否包含毫秒，生成更加有序的数字，但这会增加重复率</param>
+            <param name="haveMs">是否包含毫秒，如果不包含，将使用3位随机数代替</param>
             <returns></returns>
         </member>
         <member name="T:PWMIS.Core.Interface.IDbContextProvider">
@@ -2625,7 +2877,7 @@
             实体数据容器
             </summary>
         </member>
-        <member name="T:PWMIS.DataMap.Entity.EntityContainer.Func`1">
+        <member name="T:PWMIS.DataMap.Entity.EntityContainer.MyFunc1`1">
             <summary>
             以 TResult为输入参数，并返回此类型的函数的委托定义
             </summary>
@@ -2633,11 +2885,12 @@
             <param name="arg">参数</param>
             <returns></returns>
         </member>
-        <member name="T:PWMIS.DataMap.Entity.EntityContainer.MyFunc`1">
+        <member name="T:PWMIS.DataMap.Entity.EntityContainer.MyFunc2`1">
             <summary>
-            返回一个结果类型的泛型委托函数
+            接受一个对象数组参数并返回指定的结果类型
             </summary>
             <typeparam name="TResult"></typeparam>
+            <param name="args"></param>
             <returns></returns>
         </member>
         <member name="M:PWMIS.DataMap.Entity.EntityContainer.#ctor">
@@ -2723,7 +2976,7 @@
             <param name="fieldIndex"></param>
             <returns></returns>
         </member>
-        <member name="M:PWMIS.DataMap.Entity.EntityContainer.Map``1(PWMIS.DataMap.Entity.EntityContainer.Func{``0})">
+        <member name="M:PWMIS.DataMap.Entity.EntityContainer.Map``1(PWMIS.DataMap.Entity.EntityContainer.MyFunc1{``0})">
             <summary>
             采用自定义的映射方式，将数据容器中的数据映射到指定的类中 
             </summary>
@@ -3627,6 +3880,13 @@
             </summary>
             <param name="entityType">根据当前实体类所在程序集，获取其中的嵌入式EntityMapSql 文件</param>
             <returns>映射的SQL语句</returns>
+        </member>
+        <member name="M:PWMIS.DataMap.Entity.EntityQuery`1.QueryList(System.Data.IDataReader)">
+            <summary>
+            将数据阅读器的结果转换到实体列表上
+            </summary>
+            <param name="reader"></param>
+            <returns></returns>
         </member>
         <member name="M:PWMIS.DataMap.Entity.EntityQuery`1.QueryList(System.Data.IDataReader,System.String)">
             <summary>
@@ -5687,6 +5947,14 @@
             <value></value>
             <returns></returns>
             <remarks></remarks>
+        </member>
+        <member name="M:PWMIS.DataMap.SqlMap.DBMapper.MapObjectList``1(System.Data.IDataReader)">
+            <summary>
+            映射到对象列表，要求对象的属性名根字段名大小写严格一致
+            </summary>
+            <typeparam name="T">对象类型，如一个DTO类</typeparam>
+            <param name="reader">数据阅读器</param>
+            <returns>对象列表</returns>
         </member>
         <member name="T:PWMIS.DataMap.SqlMap.XmlCommand">
             <summary>

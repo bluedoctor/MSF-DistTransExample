@@ -266,146 +266,15 @@ namespace DistTransServices
                     PrintLog("MSF DTC({0}) Controller Process Reuslt:{1},Receive time:{2}", transIdentity, r,DateTime.Now.ToString("HH:mm:ss.fff"));
                     client.Close();
                 },
-                s =>
-                {
-                    PrintLog("MSF DTC({0}) Resource at {1} receive DTC Controller state:{2}", transIdentity, DateTime.Now.ToString("HH:mm:ss.fff"), s);
-                    if (s == DistTrans3PCState.CanCommit)
+                s => {
+                    var DTR_State=  ProcessDistTrans3PCState<T>(client, dbHelper, transFunction, s, tcs, transIdentity);
+                    if (DTR_State == DistTrans3PCState.Completed)
                     {
-                        try
-                        {
-                            T t= transFunction(dbHelper);
-                            ResourceServerState = DistTrans3PCState.Rep_Yes_1PC;
-                            tcs.SetResult(t);
-                        }
-                        catch (Exception ex)
-                        {
-                            PrintLog(ex.Message);
-                            ResourceServerState = DistTrans3PCState.Rep_No_1PC;
-                            tcs.SetException(ex);
-                        }
-                        //警告：如果自此之后，很长时间没有收到协调服务器的任何回复，本地应回滚事务
-                        new Task(() =>
-                        {
-                            DateTime currOptTime = DateTime.Now;
-                            PrintLog("MSF DTC({0}) 1PC,Child moniter task has started at time:{1}", transIdentity, currOptTime.ToString("HH:mm:ss.fff"));
-
-                            while (ResourceServerState != DistTrans3PCState.Completed)
-                            {
-                                System.Threading.Thread.Sleep(10);
-                                if (ResourceServerState != DistTrans3PCState.Rep_Yes_1PC && ResourceServerState != DistTrans3PCState.Rep_No_1PC)
-                                {
-                                    //在1阶段，只要发现通信中断，就应该回滚事务
-                                    if (ResourceServerState == DistTrans3PCState.CommunicationInterrupt)
-                                    {
-                                        TryRollback(dbHelper);
-                                        client.Close();
-                                        PrintLog("** MSF DTC({0}) 1PC,Child moniter task check Communication Interrupt ,Rollback Transaction,task break!", transIdentity);
-                                    }
-                                    else
-                                    {
-                                        PrintLog("MSF DTC({0}) 1PC,Child moniter task find DistTrans3PCState has changed,Now is {1},task break!", transIdentity, ResourceServerState);
-                                    }
-                                    break;
-                                }
-                                else
-                                {
-                                    //在1阶段回复消息后，超过一分钟，资源服务器没有收到协调服务器的任何响应，回滚本地事务
-                                    if (DateTime.Now.Subtract(currOptTime).TotalSeconds > 60)
-                                    {
-                                        TryRollback(dbHelper);
-                                        client.Close();
-                                        PrintLog("** MSF DTC({0}) 1PC,Child moniter task check Opreation timeout,Rollback Transaction,task break!", transIdentity);
-                                        break;
-                                    }
-                                }
-                            }
-
-                        }, TaskCreationOptions.None).Start();
-
-                        return ResourceServerState;
+                        PrintLog("MSF DTC({0}) 3PC Request Completed,use time:{1} seconds.", transIdentity, DateTime.Now.Subtract(dtcReqTime).TotalSeconds);
                     }
-                    else if (s == DistTrans3PCState.PreCommit)
-                    {
-                        ResourceServerState = DistTrans3PCState.ACK_Yes_2PC;
-                        //警告：如果自此之后，如果成功确认资源服务器进入第二阶段，但是很长时间没有收到协调服务器的任何回复，本地应提交事务
-                        new Task(() =>
-                        {
-                            DateTime currOptTime = DateTime.Now;
-                            PrintLog("MSF DTC({0}) 2PC,Child moniter task has started at time:{1}", transIdentity, currOptTime.ToString("HH:mm:ss.fff"));
-
-                            while (ResourceServerState != DistTrans3PCState.Completed)
-                            {
-                                System.Threading.Thread.Sleep(10);
-                                if (ResourceServerState != DistTrans3PCState.ACK_Yes_2PC)
-                                {
-                                    //在2阶段，如果在1秒内就检测到通信已经中断，事务控制器可能难以收到预提交确认信息，考虑回滚本地事务
-                                    if (ResourceServerState == DistTrans3PCState.CommunicationInterrupt )
-                                    {
-                                        if (DateTime.Now.Subtract(currOptTime).TotalMilliseconds < 1000)
-                                        {
-                                            TryRollback(dbHelper);
-                                            PrintLog("** MSF DTC({0}) 2PC,Child moniter find Communication Interrupt ,task break!", transIdentity);
-                                        }
-                                        else
-                                        {
-                                            //否则，1秒后才发现连接已经断开，预提交确认信号大概率已经发送过去，不用再等，提交本地事务
-                                            TryCommit(dbHelper);
-                                            PrintLog("MSF DTC({0}) 2PC,Child moniter find Communication Interrupt,but ACK_Yes_2PC send ok,tansaction Commit ,task break!", transIdentity);
-                                        }
-                                        //已经结束事务，关闭通信连接
-                                        client.Close();
-                                    }
-                                    else
-                                    {
-                                        //如果通信未中断且已经是其它状态，退出当前子任务
-                                        PrintLog("MSF DTC({0}) 2PC,Child moniter task find DistTrans3PCState has changed,Now is {1},task break!", transIdentity, ResourceServerState);
-                                    }
-                                    break;
-                                }
-                                else
-                                {
-                                    //在2阶段，通信未中断，超过30秒，资源服务器没有收到协调服务器的任何响应，提交本地事务
-                                    if (DateTime.Now.Subtract(currOptTime).TotalSeconds > 30)
-                                    {
-                                        TryCommit(dbHelper);
-                                        client.Close();
-                                        PrintLog("** MSF DTC({0}) 2PC,Child moniter task check Opreation timeout,Commit Transaction,task break!", transIdentity);
-                                        break;
-                                    }
-                                }
-                            }
-                        }, TaskCreationOptions.None).Start();
-
-                        return ResourceServerState;
-                    }
-                    else if (s == DistTrans3PCState.Abort)
-                    {
-                        TryRollback(dbHelper);
-                        ResourceServerState = DistTrans3PCState.ACK_No_2PC;
-                        return ResourceServerState;
-                    }
-                    else if (s == DistTrans3PCState.DoCommit)
-                    {
-                        if(TryCommit(dbHelper))
-                            ResourceServerState = DistTrans3PCState.Rep_Yes_3PC;
-                        else
-                            ResourceServerState = DistTrans3PCState.Rep_No_3PC;
-                       
-                        return ResourceServerState;
-                    }
-                    else
-                    {
-                        //其它参数，原样返回
-                        ResourceServerState = s;
-                        if (s == DistTrans3PCState.Completed)
-                        {
-                            PrintLog("MSF DTC({0}) 3PC Request Completed,use time:{1} seconds.",transIdentity, DateTime.Now.Subtract(dtcReqTime).TotalSeconds);
-                        }
-                        return s;
-                    }
-                });
-
-          
+                    return DTR_State;
+                }
+                );
 
             try
             {
@@ -419,6 +288,141 @@ namespace DistTransServices
             }
 
             return default(T);
+        }
+
+        private DistTrans3PCState ProcessDistTrans3PCState<T>(Proxy client, AdoHelper dbHelper, Func<AdoHelper, T> transFunction, DistTrans3PCState s, TaskCompletionSource<T> tcs, string transIdentity)
+        {
+            PrintLog("MSF DTC({0}) Resource at {1} receive DTC Controller state:{2}", transIdentity, DateTime.Now.ToString("HH:mm:ss.fff"), s);
+            if (s == DistTrans3PCState.CanCommit)
+            {
+                try
+                {
+                    T t = transFunction(dbHelper);
+                    ResourceServerState = DistTrans3PCState.Rep_Yes_1PC;
+                    tcs.SetResult(t);
+                }
+                catch (Exception ex)
+                {
+                    PrintLog(ex.Message);
+                    ResourceServerState = DistTrans3PCState.Rep_No_1PC;
+                    tcs.SetException(ex);
+                }
+                //警告：如果自此之后，很长时间没有收到协调服务器的任何回复，本地应回滚事务
+                new Task(() =>
+                {
+                    DateTime currOptTime = DateTime.Now;
+                    PrintLog("MSF DTC({0}) 1PC,Child moniter task has started at time:{1}", transIdentity, currOptTime.ToString("HH:mm:ss.fff"));
+
+                    while (ResourceServerState != DistTrans3PCState.Completed)
+                    {
+                        System.Threading.Thread.Sleep(10);
+                        if (ResourceServerState != DistTrans3PCState.Rep_Yes_1PC && ResourceServerState != DistTrans3PCState.Rep_No_1PC)
+                        {
+                            //在1阶段，只要发现通信中断，就应该回滚事务
+                            if (ResourceServerState == DistTrans3PCState.CommunicationInterrupt)
+                            {
+                                TryRollback(dbHelper);
+                                client.Close();
+                                PrintLog("** MSF DTC({0}) 1PC,Child moniter task check Communication Interrupt ,Rollback Transaction,task break!", transIdentity);
+                            }
+                            else
+                            {
+                                PrintLog("MSF DTC({0}) 1PC,Child moniter task find DistTrans3PCState has changed,Now is {1},task break!", transIdentity, ResourceServerState);
+                            }
+                            break;
+                        }
+                        else
+                        {
+                            //在1阶段回复消息后，超过一分钟，资源服务器没有收到协调服务器的任何响应，回滚本地事务
+                            if (DateTime.Now.Subtract(currOptTime).TotalSeconds > 60)
+                            {
+                                TryRollback(dbHelper);
+                                client.Close();
+                                PrintLog("** MSF DTC({0}) 1PC,Child moniter task check Opreation timeout,Rollback Transaction,task break!", transIdentity);
+                                break;
+                            }
+                        }
+                    }
+
+                }, TaskCreationOptions.None).Start();
+
+                return ResourceServerState;
+            }
+            else if (s == DistTrans3PCState.PreCommit)
+            {
+                ResourceServerState = DistTrans3PCState.ACK_Yes_2PC;
+                //警告：如果自此之后，如果成功确认资源服务器进入第二阶段，但是很长时间没有收到协调服务器的任何回复，本地应提交事务
+                new Task(() =>
+                {
+                    DateTime currOptTime = DateTime.Now;
+                    PrintLog("MSF DTC({0}) 2PC,Child moniter task has started at time:{1}", transIdentity, currOptTime.ToString("HH:mm:ss.fff"));
+
+                    while (ResourceServerState != DistTrans3PCState.Completed)
+                    {
+                        System.Threading.Thread.Sleep(10);
+                        if (ResourceServerState != DistTrans3PCState.ACK_Yes_2PC)
+                        {
+                            //在2阶段，如果在1秒内就检测到通信已经中断，事务控制器可能难以收到预提交确认信息，考虑回滚本地事务
+                            if (ResourceServerState == DistTrans3PCState.CommunicationInterrupt)
+                            {
+                                if (DateTime.Now.Subtract(currOptTime).TotalMilliseconds < 1000)
+                                {
+                                    TryRollback(dbHelper);
+                                    PrintLog("** MSF DTC({0}) 2PC,Child moniter find Communication Interrupt ,task break!", transIdentity);
+                                }
+                                else
+                                {
+                                    //否则，1秒后才发现连接已经断开，预提交确认信号大概率已经发送过去，不用再等，提交本地事务
+                                    TryCommit(dbHelper);
+                                    PrintLog("MSF DTC({0}) 2PC,Child moniter find Communication Interrupt,but ACK_Yes_2PC send ok,tansaction Commit ,task break!", transIdentity);
+                                }
+                                //已经结束事务，关闭通信连接
+                                client.Close();
+                            }
+                            else
+                            {
+                                //如果通信未中断且已经是其它状态，退出当前子任务
+                                PrintLog("MSF DTC({0}) 2PC,Child moniter task find DistTrans3PCState has changed,Now is {1},task break!", transIdentity, ResourceServerState);
+                            }
+                            break;
+                        }
+                        else
+                        {
+                            //在2阶段，通信未中断，超过30秒，资源服务器没有收到协调服务器的任何响应，提交本地事务
+                            if (DateTime.Now.Subtract(currOptTime).TotalSeconds > 30)
+                            {
+                                TryCommit(dbHelper);
+                                client.Close();
+                                PrintLog("** MSF DTC({0}) 2PC,Child moniter task check Opreation timeout,Commit Transaction,task break!", transIdentity);
+                                break;
+                            }
+                        }
+                    }
+                }, TaskCreationOptions.None).Start();
+
+                return ResourceServerState;
+            }
+            else if (s == DistTrans3PCState.Abort)
+            {
+                TryRollback(dbHelper);
+                ResourceServerState = DistTrans3PCState.ACK_No_2PC;
+                return ResourceServerState;
+            }
+            else if (s == DistTrans3PCState.DoCommit)
+            {
+                if (TryCommit(dbHelper))
+                    ResourceServerState = DistTrans3PCState.Rep_Yes_3PC;
+                else
+                    ResourceServerState = DistTrans3PCState.Rep_No_3PC;
+
+                return ResourceServerState;
+            }
+            else
+            {
+                //其它参数，原样返回
+                ResourceServerState = s;
+                return s;
+            }
         }
 
         private bool TryRollback(AdoHelper db)
@@ -501,6 +505,9 @@ namespace DistTransServices
         /// <returns></returns>
         public bool AttendTransaction(string identity)
         {
+            Console.WriteLine("DTCService Instance ={0},Thread ID ={1}，DTC Identity ={2}",
+                this.GetHashCode(), System.Threading.Thread.CurrentThread.ManagedThreadId,identity );
+
             DistTransInfo info = new DistTransInfo();
             info.ClientIdentity = base.CurrentContext.Request.ClientIdentity;
             info.CurrentDTCState = DistTrans3PCState.CanCommit;
